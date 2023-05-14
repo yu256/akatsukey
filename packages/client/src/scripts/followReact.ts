@@ -72,6 +72,20 @@ export async function followReact(reaction: string, noteId: string): Promise<voi
 
 	const isForbidden = name?.includes('misskeyio');
 
+	const fallbackemoji = (emoji: string): string => {
+		switch (emoji) {
+			case 'ai_acid_misskeyio':
+				return 'hinata_acid';
+			case 'ai_panic_misskeyio':
+				return 'senko_stop';
+			case 'ai_embarrased_misskeyio':
+				return 'senko_stop';
+			case 'ai_sign_misskeyio':
+				return 'blobgo';
+		}
+		return emoji;
+	};
+
 	if (
 		isCustom &&
 		emojiId &&
@@ -87,7 +101,7 @@ export async function followReact(reaction: string, noteId: string): Promise<voi
 		emojiId &&
 		!isLocal &&
 		!isForbidden
-	)	{	
+	)	{
 		await importEmoji(true).then(() => {
 			setTimeout(() => {
 				os.api('notes/reactions/create', {
@@ -97,9 +111,9 @@ export async function followReact(reaction: string, noteId: string): Promise<voi
 			}, 2000);
 		});
 	} else {
-		os.confirm({
-			type: 'error',
-			text: `:${name}: のインポートは禁止されています。`,
+		os.api('notes/reactions/create', {
+			noteId: noteId,
+			reaction: `:${fallbackemoji(name!)}:`,
 		});
 	}
 }
