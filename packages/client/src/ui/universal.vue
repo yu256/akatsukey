@@ -390,7 +390,6 @@ stream.on('_disconnected_', async () => {
 		.button {
 			background-color: var(--bg);
 			border-radius: 3em;
-			filter: drop-shadow(5px 5px 5px var(--bg));
 			&.nav {
 				padding: 12px;
 				font-size: 1.2em;
