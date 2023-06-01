@@ -1,7 +1,6 @@
 import { Brackets } from 'typeorm';
 import { Notes, Followings } from '@/models/index.js';
 import { activeUsersChart } from '@/services/chart/index.js';
-import { genId } from '@/misc/gen-id.js';
 import define from '../../define.js';
 import { makePaginationQuery } from '../../common/make-pagination-query.js';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query.js';
@@ -56,7 +55,6 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const query = makePaginationQuery(Notes.createQueryBuilder('note'),
 		ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
-		.andWhere('note.id > :minId', { minId: genId(new Date(Date.now() - (1000 * 60 * 60 * 24 * 10))) }) // 10日前まで
 		.innerJoinAndSelect('note.user', 'user')
 		.leftJoinAndSelect('user.avatar', 'avatar')
 		.leftJoinAndSelect('user.banner', 'banner')
