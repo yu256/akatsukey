@@ -22,7 +22,7 @@ import { $i } from '@/account';
 import MkReactionEffect from '@/components/MkReactionEffect.vue';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
-import { customEmojis, fetchCustomEmojis } from '@/custom-emojis';
+import { customEmojis } from '@/custom-emojis';
 
 interface Note {
 	reactionEmojis: Map<string, string>;
@@ -91,7 +91,7 @@ function anime(): void {
 
 function reactAlternative(): void {
 	if (!alternative.value) {
-		importAndReact();
+		importEmojiConfirm();
 		return;
 	}
 	os.api('notes/reactions/create', {
@@ -100,23 +100,14 @@ function reactAlternative(): void {
 	});
 }
 
-async function importAndReact(): Promise<void> {
+async function importEmojiConfirm(): Promise<void> {
 	if (!($i?.isAdmin || $i?.isModerator)) return;
-	const confirm = await os.confirm({
+	const { canceled } = await os.confirm({
 		type: 'info',
-		text: 'インポートしてリアクションしますか？',
+		text: 'インポートしますか？',
 	});
-	if (confirm.canceled) return;
-	await importEmoji().then(() =>
-		setTimeout(() => {
-			fetchCustomEmojis(true);
-		}, 2000),
-	).then(() => {
-		os.api('notes/reactions/create', {
-			noteId: props.note.id,
-			reaction: `:${reactionName.value}:`,
-		});
-	});
+	if (!canceled) importEmoji().then(() =>
+		os.toast(`${reactionName.value}をインポートしました`));
 }
 
 async function importEmoji(): Promise<void> {
