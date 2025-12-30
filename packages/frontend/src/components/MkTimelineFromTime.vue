@@ -54,7 +54,7 @@ const emit = defineEmits<{
 }>();
 
 const targetDateTime = ref('');
-const sinceDate = ref<string | null>(null);
+const sinceDate = ref<number | null>(null);
 const prComponent = shallowRef<InstanceType<typeof MkPullToRefresh>>();
 const tlComponent = shallowRef<InstanceType<typeof MkNotes>>();
 
@@ -63,7 +63,7 @@ type TimelineQueryType = {
   withReplies?: boolean,
   withFiles?: boolean,
   listId?: string,
-  sinceDate?: string,
+  sinceDate?: number,
 }
 
 const paginationQuery = computed<Paging | null>(() => {
@@ -131,7 +131,7 @@ async function loadFromTime() {
 
 	try {
 		const targetDate = new Date(targetDateTime.value);
-		sinceDate.value = targetDate.toISOString();
+		sinceDate.value = targetDate.getTime();
 	} catch (error) {
 		console.error('Failed to load timeline from specified time:', error);
 	}
