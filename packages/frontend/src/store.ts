@@ -117,6 +117,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'account',
 		default: true,
 	},
+	compressHighQuality: {
+		where: 'account',
+		default: true,
+	},
 	memo: {
 		where: 'account',
 		default: null,

@@ -52,7 +52,8 @@ export function uploadFile(
 					const compressed = await compressImage(file, {
 						targetSize: defaultStore.state.compressToTargetSize,
 						quality: 80,
-						minQuality: 60
+						minQuality: 50,
+						highQuality: defaultStore.state.compressHighQuality
 					});
 
 					if (compressed) {
