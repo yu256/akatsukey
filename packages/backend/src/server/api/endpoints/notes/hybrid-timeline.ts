@@ -103,7 +103,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const serverSettings = await this.metaService.fetch();
 
-			if (!serverSettings.enableFanoutTimeline) {
+			// sinceDate/sinceIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
+			const shouldUseDbDirectly = ps.sinceDate != null || ps.sinceId != null;
+
+			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({
 					untilId,
 					sinceId,

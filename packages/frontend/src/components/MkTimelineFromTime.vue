@@ -120,6 +120,8 @@ const paginationQuery = computed<Paging | null>(() => {
 			endpoint: endpoint,
 			limit: 10,
 			params: query,
+			// 特定時刻からのタイムライン表示では古い順にソート
+			reversed: true,
 		};
 	} else {
 		return null;
