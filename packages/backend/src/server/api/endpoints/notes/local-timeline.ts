@@ -12,7 +12,6 @@ import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
-import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { MiLocalUser } from '@/models/User.js';
@@ -79,7 +78,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
 		private idService: IdService,
-		private cacheService: CacheService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private queryService: QueryService,
 		private metaService: MetaService,
@@ -95,16 +93,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
-			// sinceDate/sinceIdが指定された場合でログインしていない場合はエラー
-			if ((ps.sinceDate != null || ps.sinceId != null) && me == null) {
+			// sinceDate/sinceId/untilDate/untilIdが指定された場合でログインしていない場合はエラー
+			if ((ps.sinceDate != null || ps.sinceId != null || ps.untilDate != null || ps.untilId != null) && me == null) {
 				throw new ApiError(meta.errors.credentialRequiredForHistorical);
 			}
 
 			const serverSettings = await this.metaService.fetch();
 
-			// sinceDate/sinceIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
+			// sinceDate/sinceId/untilDate/untilIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
 			// ただし、ログインユーザーのみに制限
-			const shouldUseDbDirectly = (ps.sinceDate != null || ps.sinceId != null) && me != null;
+			const shouldUseDbDirectly = (ps.sinceDate != null || ps.sinceId != null || ps.untilDate != null || ps.untilId != null) && me != null;
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({

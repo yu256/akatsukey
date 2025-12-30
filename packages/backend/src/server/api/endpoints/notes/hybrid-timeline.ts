@@ -12,7 +12,6 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
-import { CacheService } from '@/core/CacheService.js';
 import { FanoutTimelineName } from '@/core/FanoutTimelineService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
@@ -84,7 +83,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private activeUsersChart: ActiveUsersChart,
 		private idService: IdService,
-		private cacheService: CacheService,
 		private queryService: QueryService,
 		private userFollowingService: UserFollowingService,
 		private metaService: MetaService,
@@ -103,8 +101,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const serverSettings = await this.metaService.fetch();
 
-			// sinceDate/sinceIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
-			const shouldUseDbDirectly = ps.sinceDate != null || ps.sinceId != null;
+			// sinceDate/sinceId/untilDate/untilIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
+			const shouldUseDbDirectly = ps.sinceDate != null || ps.sinceId != null || ps.untilDate != null || ps.untilId != null;
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({
