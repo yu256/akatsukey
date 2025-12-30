@@ -144,13 +144,13 @@ export class DriveService {
 	 */
 	@bindThis
 	private async save(file: MiDriveFile, path: string, name: string, type: string, hash: string, size: number): Promise<MiDriveFile> {
-	// thunbnail, webpublic を必要なら生成
+		// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
 
 		const meta = await this.metaService.fetch();
 
 		if (meta.useObjectStorage) {
-		//#region ObjectStorage params
+			//#region ObjectStorage params
 			let [ext] = (name.match(/\.([a-zA-Z0-9_-]+)$/) ?? ['']);
 
 			if (ext === '') {
@@ -299,7 +299,7 @@ export class DriveService {
 		}
 
 		let img: sharp.Sharp | null = null;
-		let satisfyWebpublic: boolean;
+		let shouldCompressForWebpublic: boolean;
 		let isAnimated: boolean;
 
 		try {
@@ -307,12 +307,12 @@ export class DriveService {
 			const metadata = await img.metadata();
 			isAnimated = !!(metadata.pages && metadata.pages > 1);
 
-			satisfyWebpublic = !!(
+			const hasMetadata = !!(metadata.exif ?? metadata.iptc ?? metadata.xmp ?? metadata.tifftagPhotoshop);
+
+			shouldCompressForWebpublic = hasMetadata || (
 				type !== 'image/svg+xml' && // security reason
 				type !== 'image/avif' && // not supported by Mastodon and MS Edge
-			!(metadata.exif ?? metadata.iptc ?? metadata.xmp ?? metadata.tifftagPhotoshop) &&
-			metadata.width && metadata.width <= 4096 &&
-			metadata.height && metadata.height <= 4096
+				(await fs.promises.stat(path)).size > 1048576 // 1MB
 			);
 		} catch (err) {
 			this.registerLogger.warn(`sharp failed: ${err}`);
@@ -325,8 +325,8 @@ export class DriveService {
 		// #region webpublic
 		let webpublic: IImage | null = null;
 
-		if (generateWeb && !satisfyWebpublic && !isAnimated) {
-			this.registerLogger.info('creating web image');
+		if (generateWeb && shouldCompressForWebpublic && !isAnimated) {
+			this.registerLogger.info('creating web image (file size > 1MB or has metadata)');
 
 			try {
 				if (['image/jpeg', 'image/webp', 'image/avif'].includes(type)) {
@@ -340,7 +340,7 @@ export class DriveService {
 				this.registerLogger.warn('web image not created (an error occurred)', err as Error);
 			}
 		} else {
-			if (satisfyWebpublic) this.registerLogger.info('web image not created (original satisfies webpublic)');
+			if (!shouldCompressForWebpublic) this.registerLogger.info('web image not created (file size <= 1MB and no metadata)');
 			else if (isAnimated) this.registerLogger.info('web image not created (animated image)');
 			else this.registerLogger.info('web image not created (from remote)');
 		}
@@ -472,11 +472,11 @@ export class DriveService {
 		const info = await this.fileInfoService.getFileInfo(path, {
 			skipSensitiveDetection: skipNsfwCheck,
 			sensitiveThreshold: // 感度が高いほどしきい値は低くすることになる
-			instance.sensitiveMediaDetectionSensitivity === 'veryHigh' ? 0.1 :
-			instance.sensitiveMediaDetectionSensitivity === 'high' ? 0.3 :
-			instance.sensitiveMediaDetectionSensitivity === 'low' ? 0.7 :
-			instance.sensitiveMediaDetectionSensitivity === 'veryLow' ? 0.9 :
-			0.5,
+				instance.sensitiveMediaDetectionSensitivity === 'veryHigh' ? 0.1 :
+					instance.sensitiveMediaDetectionSensitivity === 'high' ? 0.3 :
+						instance.sensitiveMediaDetectionSensitivity === 'low' ? 0.7 :
+							instance.sensitiveMediaDetectionSensitivity === 'veryLow' ? 0.9 :
+								0.5,
 			sensitiveThresholdForPorn: 0.75,
 			enableSensitiveMediaDetectionForVideos: instance.enableSensitiveMediaDetectionForVideos,
 		});
@@ -496,7 +496,7 @@ export class DriveService {
 		);
 
 		if (user && !force) {
-		// Check if there is a file with the same hash
+			// Check if there is a file with the same hash
 			const much = await this.driveFilesRepository.findOneBy({
 				md5: info.md5,
 				userId: user.id,
@@ -578,7 +578,7 @@ export class DriveService {
 		file.maybePorn = info.porn;
 		file.isSensitive = user
 			? this.userEntityService.isLocalUser(user) && profile!.alwaysMarkNsfw ? true :
-			sensitive ?? false
+				sensitive ?? false
 			: false;
 
 		if (info.sensitive && profile!.autoSensitive) file.isSensitive = true;
@@ -611,7 +611,7 @@ export class DriveService {
 
 				file = await this.driveFilesRepository.insert(file).then(x => this.driveFilesRepository.findOneByOrFail(x.identifiers[0]));
 			} catch (err) {
-			// duplicate key error (when already registered)
+				// duplicate key error (when already registered)
 				if (isDuplicateKeyValueError(err)) {
 					this.registerLogger.info(`already registered ${file.uri}`);
 
