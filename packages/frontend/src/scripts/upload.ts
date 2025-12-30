@@ -5,8 +5,7 @@
 
 import { reactive, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import encode from '@jsquash/webp/encode.js';
-import { compressTypes, createImageData, shouldBeCompressed } from './upload/compress.js';
+import { compressTypes, shouldBeCompressed, compressImage } from './upload/compress.js';
 import { defaultStore } from '@/store.js';
 import { apiUrl } from '@/config.js';
 import { $i } from '@/account.js';
@@ -50,27 +49,23 @@ export function uploadFile(
 			let resizedImage: Blob | undefined;
 			if (!keepOriginal && await shouldBeCompressed(file)) {
 				try {
-					const resized = new Blob([
-						await createImageData(file).then((img) =>
-							encode(img, {
-								quality: 80,
-							}),
-						),
-					]);
+					const compressed = await compressImage(file, {
+						targetSize: defaultStore.state.compressToTargetSize,
+						quality: 80,
+						minQuality: 60
+					});
 
-					if (resized.size < file.size || file.type === 'image/webp') {
-						// The compression may not always reduce the file size
-						// (and WebP is not browser safe yet)
-						resizedImage = resized;
+					if (compressed) {
+						resizedImage = compressed;
+						if (_DEV_) {
+							const saved = ((1 - compressed.size / file.size) * 100).toFixed(2);
+							const method = defaultStore.state.compressToTargetSize ? 'target size' : 'fixed quality';
+							console.log(`Image compression (${method}): before ${file.size} bytes, after ${compressed.size} bytes, saved ${saved}%`);
+						}
+						ctx.name = ctx.name.replace(compressTypes[file.type], 'webp');
 					}
-					if (_DEV_) {
-						const saved = ((1 - resized.size / file.size) * 100).toFixed(2);
-						console.log(`Image compression: before ${file.size} bytes, after ${resized.size} bytes, saved ${saved}%`);
-					}
-
-					ctx.name = ctx.name.replace(compressTypes[file.type], 'webp');
 				} catch (err) {
-					console.error('Failed to resize image', err);
+					console.error('Failed to compress image', err);
 				}
 			}
 

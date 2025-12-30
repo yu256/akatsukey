@@ -44,6 +44,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.keepOriginalUploading }}</template>
 				<template #caption>{{ i18n.ts.keepOriginalUploadingDescription }}</template>
 			</MkSwitch>
+			<MkSwitch v-model="compressToTargetSize">
+				<template #label>{{ i18n.ts.compressToTargetSize }}</template>
+				<template #caption>{{ i18n.ts.compressToTargetSizeDescription }}</template>
+			</MkSwitch>
 			<MkSwitch v-model="alwaysMarkNsfw" @update:modelValue="saveProfile()">
 				<template #label>{{ i18n.ts.alwaysMarkSensitive }}</template>
 			</MkSwitch>
@@ -96,6 +100,7 @@ const meterStyle = computed(() => {
 });
 
 const keepOriginalUploading = computed(defaultStore.makeGetterSetter('keepOriginalUploading'));
+const compressToTargetSize = computed(defaultStore.makeGetterSetter('compressToTargetSize'));
 
 misskeyApi('drive').then(info => {
 	capacity.value = info.capacity;

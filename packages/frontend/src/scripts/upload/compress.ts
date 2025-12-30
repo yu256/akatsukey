@@ -4,6 +4,7 @@
  */
 
 import isAnimated from 'is-file-animated';
+import encode from '@jsquash/webp/encode.js';
 
 export async function createImageData(file: File): Promise<ImageData> {
 	const img = await new Promise<HTMLImageElement>(resolve => {
@@ -33,4 +34,87 @@ export const compressTypes = {
 
 export async function shouldBeCompressed(file: File): Promise<boolean> {
 	return (compressTypes[file.type] && !await isAnimated(file));
+}
+
+/**
+ * Compress image with specified options
+ * @param file Original file
+ * @param options Compression options
+ * @returns Compressed blob or null if compression failed
+ */
+export async function compressImage(
+	file: File,
+	options: {
+		targetSize?: boolean; // Use target size compression (1MB)
+		quality?: number; // Fixed quality (default: 80)
+		minQuality?: number; // Minimum quality for target size compression (default: 60)
+	} = {}
+): Promise<Blob | null> {
+	if (!compressTypes[file.type] || await isAnimated(file)) {
+		return null;
+	}
+
+	const imageData = await createImageData(file);
+	
+	if (options.targetSize) {
+		// Use target size compression
+		const targetSizeBytes = 1048576; // 1MB
+		const minQuality = options.minQuality ?? 60;
+		let quality = 80;
+		let compressedBlob: Blob | null = null;
+
+		// Try different quality levels from 80 down to minQuality
+		while (quality >= minQuality) {
+			try {
+				const compressed = new Blob([
+					await encode(imageData, { quality })
+				], { type: 'image/webp' });
+
+				compressedBlob = compressed;
+
+				// If we've reached the target size, return this version
+				if (compressed.size <= targetSizeBytes) {
+					break;
+				}
+
+				quality -= 4;
+			} catch (err) {
+				console.error('Failed to compress image at quality', quality, err);
+				break;
+			}
+		}
+
+		// Return the compressed version if it's smaller than original, otherwise null
+		return compressedBlob && compressedBlob.size < file.size ? compressedBlob : null;
+	} else {
+		// Use fixed quality compression
+		const quality = options.quality ?? 80;
+		try {
+			const compressed = new Blob([
+				await encode(imageData, { quality })
+			], { type: 'image/webp' });
+
+			// Return compressed version if it's smaller than original or if it's WebP
+			return compressed.size < file.size || file.type === 'image/webp' ? compressed : null;
+		} catch (err) {
+			console.error('Failed to compress image at quality', quality, err);
+			return null;
+		}
+	}
+}
+
+/**
+ * Compress image to target file size (1MB by default)
+ * @param file Original file
+ * @param targetSizeBytes Target file size in bytes (default: 1MB)
+ * @param minQuality Minimum quality to try (default: 60)
+ * @returns Compressed blob or null if compression failed
+ * @deprecated Use compressImage with targetSize option instead
+ */
+export async function compressToTargetSize(
+	file: File, 
+	targetSizeBytes: number = 1048576, // 1MB
+	minQuality: number = 60
+): Promise<Blob | null> {
+	return compressImage(file, { targetSize: true, minQuality });
 }
