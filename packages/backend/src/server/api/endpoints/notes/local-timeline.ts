@@ -44,6 +44,12 @@ export const meta = {
 			code: 'BOTH_WITH_REPLIES_AND_WITH_FILES',
 			id: 'dd9c8400-1cb5-4eef-8a31-200c5f933793',
 		},
+
+		credentialRequiredForHistorical: {
+			message: 'Credential required for historical timeline access.',
+			code: 'CREDENTIAL_REQUIRED',
+			id: 'timeline-historical-access-denied',
+		},
 	},
 } as const;
 
@@ -89,10 +95,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
+			// sinceDate/sinceIdが指定された場合でログインしていない場合はエラー
+			if ((ps.sinceDate != null || ps.sinceId != null) && me == null) {
+				throw new ApiError(meta.errors.credentialRequiredForHistorical);
+			}
+
 			const serverSettings = await this.metaService.fetch();
 
 			// sinceDate/sinceIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
-			const shouldUseDbDirectly = ps.sinceDate != null || ps.sinceId != null;
+			// ただし、ログインユーザーのみに制限
+			const shouldUseDbDirectly = (ps.sinceDate != null || ps.sinceId != null) && me != null;
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({

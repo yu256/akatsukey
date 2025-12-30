@@ -5,7 +5,11 @@
 	</template>
 	<MkSpacer :contentMax="800">
 		<div ref="rootEl">
+			<div v-if="!$i" class="login-required">
+				<MkInfo warn>{{ i18n.ts.signinRequired }}</MkInfo>
+			</div>
 			<MkTimelineFromTime
+				v-else
 				:key="src"
 				:src="src.split(':')[0] as 'home' | 'local' | 'social' | 'global' | 'list'"
 				:list="src.split(':')[1]"
@@ -21,11 +25,11 @@
 
 <script lang="ts" setup>
 import { computed, provide, ref } from 'vue';
-import type * as Misskey from 'misskey-js';
 import MkTimelineFromTime from '@/components/MkTimelineFromTime.vue';
 import MkSpacer from '@/components/global/MkSpacer.vue';
 import MkStickyContainer from '@/components/global/MkStickyContainer.vue';
 import MkPageHeader from '@/components/global/MkPageHeader.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { $i } from '@/account.js';
 import { i18n } from '@/i18n.js';
