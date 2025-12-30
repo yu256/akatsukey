@@ -25,14 +25,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div v-else ref="rootEl">
-		<div v-show="pagination.reversed && more" key="_more_" class="_margin">
+		<div v-show="(props.direction === 'up' || props.direction === 'both') && more" key="_more_ahead_" class="_margin">
+			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? appearFetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMoreAhead">
+				{{ i18n.ts.loadMore }}
+			</MkButton>
+			<MkLoading v-else class="loading"/>
+		</div>
+		<div v-show="pagination.reversed && more" key="_more_reversed_" class="_margin">
 			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? appearFetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMoreAhead">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
 			<MkLoading v-else class="loading"/>
 		</div>
 		<slot :items="Array.from(items.values())" :fetching="fetching || moreFetching"></slot>
-		<div v-show="!pagination.reversed && more" key="_more_" class="_margin">
+		<div v-show="!pagination.reversed && (props.direction === 'down' || props.direction === 'both') && more" key="_more_" class="_margin">
 			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? appearFetchMore : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMore">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
@@ -97,8 +103,10 @@ const props = withDefaults(defineProps<{
 	pagination: Paging;
 	disableAutoLoad?: boolean;
 	displayLimit?: number;
+	direction?: 'up' | 'down' | 'both';
 }>(), {
 	displayLimit: 20,
+	direction: 'down',
 });
 
 const emit = defineEmits<{
