@@ -16,7 +16,6 @@
 			v-if="paginationQuery"
 			ref="paginationComponent"
 			:pagination="paginationQuery"
-			direction="both"
 		>
 			<template #default="{ items }">
 				<MkDateSeparatedList
