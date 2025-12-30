@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkTimeline
 						ref="tlComponent"
 						:key="src + withRenotes + withReplies + onlyFiles"
-						:src="src.split(':')[0]"
+						:src="src.split(':')[0] as 'home' | 'local' | 'social' | 'global' | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role'"
 						:list="src.split(':')[1]"
 						:withRenotes="withRenotes"
 						:withReplies="withReplies"
@@ -53,8 +53,11 @@ import { deviceKind } from '@/scripts/device-kind.js';
 import { deepMerge } from '@/scripts/merge.js';
 import { MenuItem } from '@/types/menu.js';
 import { miLocalStorage } from '@/local-storage.js';
+import { useRouter } from '@/router/supplier.js';
 
 provide('shouldOmitHeaderTitle', true);
+
+const router = useRouter();
 
 const isLocalTimelineAvailable = ($i == null && instance.policies.ltlAvailable) || ($i != null && $i.policies.ltlAvailable);
 const isGlobalTimelineAvailable = ($i == null && instance.policies.gtlAvailable) || ($i != null && $i.policies.gtlAvailable);
@@ -222,15 +225,12 @@ function saveTlFilter(key: keyof typeof defaultStore.state.tl.filter, newValue: 
 
 async function timetravel(): Promise<void> {
 	const { canceled, result: date } = await os.inputDate({
-		title: i18n.ts.date,
+		title: i18n.ts.date as string,
 	});
 	if (canceled) return;
-
-	tlComponent.value.timetravel(date);
 }
 
 function focus(): void {
-	tlComponent.value.focus();
 }
 
 function closeTutorial(): void {
@@ -242,6 +242,13 @@ function closeTutorial(): void {
 
 const headerActions = computed(() => {
 	const tmp = [
+		{
+			icon: 'ti ti-clock',
+			text: i18n.ts.loadFromTime,
+			handler: () => {
+				router.push('/timeline/from-time');
+			},
+		},
 		{
 			icon: 'ti ti-dots',
 			text: i18n.ts.options,

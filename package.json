@@ -69,5 +69,8 @@
 	},
 	"optionalDependencies": {
 		"@tensorflow/tfjs-core": "4.4.0"
+	},
+	"volta": {
+		"node": "20.19.6"
 	}
 }

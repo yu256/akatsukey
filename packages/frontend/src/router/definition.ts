@@ -565,6 +565,9 @@ const routes: RouteDef[] = [{
 	path: '/timeline',
 	component: page(() => import('@/pages/timeline.vue')),
 }, {
+	path: '/timeline/from-time',
+	component: page(() => import('@/pages/timeline-from-time.vue')),
+}, {
 	name: 'index',
 	path: '/',
 	component: $i ? page(() => import('@/pages/timeline.vue')) : page(() => import('@/pages/welcome.vue')),

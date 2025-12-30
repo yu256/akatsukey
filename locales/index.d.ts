@@ -1109,6 +1109,22 @@ export interface Locale extends ILocale {
      */
     "keepOriginalUploadingDescription": string;
     /**
+     * 1MBまで圧縮
+     */
+    "compressToTargetSize": string;
+    /**
+     * 画像を1MB以下になるまで品質を下げて圧縮します。品質50まで試行し、それでも1MBを超える場合は最後の結果をアップロードします。
+     */
+    "compressToTargetSizeDescription": string;
+    /**
+     * 高品質圧縮
+     */
+    "compressHighQuality": string;
+    /**
+     * WebP圧縮時に高品質設定（effort=6, smart_subsample=true, strip=true）を使用します。処理時間は長くなりますが、より良い品質を得られます。
+     */
+    "compressHighQualityDescription": string;
+    /**
      * ドライブから
      */
     "fromDrive": string;
@@ -3212,6 +3228,22 @@ export interface Locale extends ILocale {
      * 過去のタイムラインを表示しています
      */
     "showingPastTimeline": string;
+    /**
+     * 対象日時
+     */
+    "targetDateTime": string;
+    /**
+     * この日時以降のノートを表示します
+     */
+    "targetDateTimeCaption": string;
+    /**
+     * 指定時刻から読み込み
+     */
+    "loadFromTime": string;
+    /**
+     * 表示中のノート開始時刻
+     */
+    "showingNotesFrom": string;
     /**
      * クリア
      */
