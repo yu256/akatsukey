@@ -137,6 +137,7 @@ import * as ep___clips_favorite from './endpoints/clips/favorite.js';
 import * as ep___clips_unfavorite from './endpoints/clips/unfavorite.js';
 import * as ep___clips_myFavorites from './endpoints/clips/my-favorites.js';
 import * as ep___drive from './endpoints/drive.js';
+import * as ep___drive_cleaner_files from './endpoints/drive/cleaner/files.js';
 import * as ep___drive_files from './endpoints/drive/files.js';
 import * as ep___drive_files_attachedNotes from './endpoints/drive/files/attached-notes.js';
 import * as ep___drive_files_checkExistence from './endpoints/drive/files/check-existence.js';
@@ -504,6 +505,7 @@ const eps = [
 	['clips/unfavorite', ep___clips_unfavorite],
 	['clips/my-favorites', ep___clips_myFavorites],
 	['drive', ep___drive],
+	['drive/cleaner/files', ep___drive_cleaner_files],
 	['drive/files', ep___drive_files],
 	['drive/files/attached-notes', ep___drive_files_attachedNotes],
 	['drive/files/check-existence', ep___drive_files_checkExistence],

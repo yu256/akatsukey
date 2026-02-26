@@ -137,6 +137,7 @@ import * as ep___clips_favorite from './endpoints/clips/favorite.js';
 import * as ep___clips_unfavorite from './endpoints/clips/unfavorite.js';
 import * as ep___clips_myFavorites from './endpoints/clips/my-favorites.js';
 import * as ep___drive from './endpoints/drive.js';
+import * as ep___drive_cleaner_files from './endpoints/drive/cleaner/files.js';
 import * as ep___drive_files from './endpoints/drive/files.js';
 import * as ep___drive_files_attachedNotes from './endpoints/drive/files/attached-notes.js';
 import * as ep___drive_files_checkExistence from './endpoints/drive/files/check-existence.js';
@@ -506,6 +507,7 @@ const $clips_favorite: Provider = { provide: 'ep:clips/favorite', useClass: ep__
 const $clips_unfavorite: Provider = { provide: 'ep:clips/unfavorite', useClass: ep___clips_unfavorite.default };
 const $clips_myFavorites: Provider = { provide: 'ep:clips/my-favorites', useClass: ep___clips_myFavorites.default };
 const $drive: Provider = { provide: 'ep:drive', useClass: ep___drive.default };
+const $drive_cleaner_files: Provider = { provide: 'ep:drive/cleaner/files', useClass: ep___drive_cleaner_files.default };
 const $drive_files: Provider = { provide: 'ep:drive/files', useClass: ep___drive_files.default };
 const $drive_files_attachedNotes: Provider = { provide: 'ep:drive/files/attached-notes', useClass: ep___drive_files_attachedNotes.default };
 const $drive_files_checkExistence: Provider = { provide: 'ep:drive/files/check-existence', useClass: ep___drive_files_checkExistence.default };
@@ -879,6 +881,7 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$clips_unfavorite,
 		$clips_myFavorites,
 		$drive,
+		$drive_cleaner_files,
 		$drive_files,
 		$drive_files_attachedNotes,
 		$drive_files_checkExistence,
