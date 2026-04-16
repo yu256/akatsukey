@@ -33,8 +33,8 @@ import MarqueeText from '@/components/MkMarquee.vue';
 import { GetFormResultType } from '@/scripts/form.js';
 import MkContainer from '@/components/MkContainer.vue';
 import { shuffle } from '@/scripts/shuffle.js';
-import { url as base } from '@/config.js';
 import { useInterval } from '@/scripts/use-interval.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 
 const name = 'rssTicker';
 
@@ -96,11 +96,6 @@ const items = computed(() => {
 	return newItems;
 });
 const fetching = ref(true);
-const fetchEndpoint = computed(() => {
-	const url = new URL('/api/fetch-rss', base);
-	url.searchParams.set('url', widgetProps.url);
-	return url;
-});
 const intervalClear = ref<(() => void) | undefined>();
 
 const key = ref(0);
@@ -108,8 +103,7 @@ const key = ref(0);
 const tick = () => {
 	if (document.visibilityState === 'hidden' && rawItems.value.length !== 0) return;
 
-	window.fetch(fetchEndpoint.value, {})
-		.then(res => res.json())
+	misskeyApi('fetch-rss', { url: widgetProps.url })
 		.then(feed => {
 			rawItems.value = feed.items ?? [];
 			fetching.value = false;
@@ -117,7 +111,7 @@ const tick = () => {
 		});
 };
 
-watch(() => fetchEndpoint, tick);
+watch(() => widgetProps.url, tick);
 watch(() => widgetProps.refreshIntervalSec, () => {
 	if (intervalClear.value) {
 		intervalClear.value();

@@ -6,7 +6,6 @@
 import * as fs from 'node:fs';
 import * as stream from 'node:stream/promises';
 import { Inject, Injectable } from '@nestjs/common';
-import ipaddr from 'ipaddr.js';
 import chalk from 'chalk';
 import got, * as Got from 'got';
 import { parse } from 'content-disposition';
@@ -40,6 +39,9 @@ export class DownloadService {
 	}> {
 		this.logger.info(`Downloading ${chalk.cyan(url)} to ${chalk.cyanBright(path)} ...`);
 
+		// Validate URL before downloading (protocol, credentials, IP literal check)
+		this.httpRequestService.validateUrl(url);
+
 		const timeout = 30 * 1000;
 		const operationTimeout = 60 * 1000;
 		const maxSize = this.config.maxFileSize ?? 262144000;
@@ -71,7 +73,7 @@ export class DownloadService {
 			enableUnixSockets: false,
 		}).on('response', (res: Got.Response) => {
 			if ((process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') && !this.config.proxy && res.ip) {
-				if (this.isPrivateIp(res.ip)) {
+				if (this.httpRequestService.isPrivateIp(res.ip)) {
 					this.logger.warn(`Blocked address: ${res.ip}`);
 					req.destroy();
 				}
@@ -140,17 +142,4 @@ export class DownloadService {
 		}
 	}
 
-	@bindThis
-	private isPrivateIp(ip: string): boolean {
-		const parsedIp = ipaddr.parse(ip);
-
-		for (const net of this.config.allowedPrivateNetworks ?? []) {
-			const cidr = ipaddr.parseCIDR(net);
-			if (cidr[0].kind() === parsedIp.kind() && parsedIp.match(ipaddr.parseCIDR(net))) {
-				return false;
-			}
-		}
-
-		return parsedIp.range() !== 'unicast';
-	}
 }

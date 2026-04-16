@@ -27,10 +27,10 @@ import { ref, watch, computed } from 'vue';
 import { useWidgetPropsManager, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
 import { GetFormResultType } from '@/scripts/form.js';
 import MkContainer from '@/components/MkContainer.vue';
-import { url as base } from '@/config.js';
 import { i18n } from '@/i18n.js';
 import { useInterval } from '@/scripts/use-interval.js';
 import { infoImageUrl } from '@/instance.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 
 const name = 'rss';
 
@@ -67,25 +67,19 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 const rawItems = ref([]);
 const items = computed(() => rawItems.value.slice(0, widgetProps.maxEntries));
 const fetching = ref(true);
-const fetchEndpoint = computed(() => {
-	const url = new URL('/api/fetch-rss', base);
-	url.searchParams.set('url', widgetProps.url);
-	return url;
-});
 const intervalClear = ref<(() => void) | undefined>();
 
 const tick = () => {
 	if (document.visibilityState === 'hidden' && rawItems.value.length !== 0) return;
 
-	window.fetch(fetchEndpoint.value, {})
-		.then(res => res.json())
+	misskeyApi('fetch-rss', { url: widgetProps.url })
 		.then(feed => {
 			rawItems.value = feed.items ?? [];
 			fetching.value = false;
 		});
 };
 
-watch(() => fetchEndpoint, tick);
+watch(() => widgetProps.url, tick);
 watch(() => widgetProps.refreshIntervalSec, () => {
 	if (intervalClear.value) {
 		intervalClear.value();

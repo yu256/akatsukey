@@ -13,9 +13,14 @@ const rssParser = new Parser();
 export const meta = {
 	tags: ['meta'],
 
-	requireCredential: false,
+	requireCredential: true,
 	allowGet: true,
 	cacheSec: 60 * 3,
+
+	limit: {
+		duration: 60 * 1000,
+		max: 10,
+	},
 
 	res: {
 		type: 'object',
