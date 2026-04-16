@@ -213,6 +213,8 @@ async function init(): Promise<void> {
 	items.value = new Map();
 	queue.value = new Map();
 	fetching.value = true;
+	moreAhead.value = false;
+	moreFetchingAhead.value = false;
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
 		...params,
@@ -352,28 +354,35 @@ const fetchNewer = async (): Promise<void> => {
 		limit: SECOND_FETCH_LIMIT,
 		sinceId: Array.from(items.value.keys()).at(0), // newest item
 	}).then(res => {
-		if (res.length === 0) {
-			moreAhead.value = false;
-		} else {
-			// sinceId-only returns ASC order; reverse to get newest-first
-			const reversed = [...res].reverse();
-
+		// Prepend newer items with scroll position preservation (same pattern as reverseConcat in fetchMore)
+		const prependWithScrollFix = (_res: MisskeyEntity[]) => {
 			const oldHeight = scrollableElement.value ? scrollableElement.value.scrollHeight : getBodyScrollHeight();
 			const oldScroll = scrollableElement.value ? scrollableElement.value.scrollTop : window.scrollY;
 
-			items.value = new Map([...arrayToEntries(reversed), ...items.value]);
+			items.value = new Map([...arrayToEntries(_res), ...items.value]);
 
-			nextTick(() => {
+			return nextTick(() => {
 				if (scrollableElement.value) {
 					scroll(scrollableElement.value, { top: oldScroll + (scrollableElement.value.scrollHeight - oldHeight), behavior: 'instant' });
 				} else {
 					window.scroll({ top: oldScroll + (getBodyScrollHeight() - oldHeight), behavior: 'instant' });
 				}
-			});
 
-			moreAhead.value = true;
+				return nextTick();
+			});
+		};
+
+		if (res.length === 0) {
+			moreAhead.value = false;
+			moreFetchingAhead.value = false;
+		} else {
+			// sinceId-only returns ASC order; reverse to get newest-first
+			const reversed = [...res].reverse();
+			prependWithScrollFix(reversed).then(() => {
+				moreAhead.value = true;
+				moreFetchingAhead.value = false;
+			});
 		}
-		moreFetchingAhead.value = false;
 	}, err => {
 		moreFetchingAhead.value = false;
 	});
