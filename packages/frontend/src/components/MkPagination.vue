@@ -25,6 +25,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 
 	<div v-else ref="rootEl">
+		<div v-show="props.direction === 'both' && moreAhead" key="_more_ahead_" class="_margin">
+			<MkButton v-if="!moreFetchingAhead" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? appearFetchNewer : null" :class="$style.more" :disabled="moreFetchingAhead" :style="{ cursor: moreFetchingAhead ? 'wait' : 'pointer' }" primary rounded @click="fetchNewer">
+				{{ i18n.ts.loadMore }}
+			</MkButton>
+			<MkLoading v-else class="loading"/>
+		</div>
 		<div v-show="pagination.reversed && more" key="_more_" class="_margin">
 			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? appearFetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMoreAhead">
 				{{ i18n.ts.loadMore }}
@@ -97,8 +103,10 @@ const props = withDefaults(defineProps<{
 	pagination: Paging;
 	disableAutoLoad?: boolean;
 	displayLimit?: number;
+	direction?: 'down' | 'both';
 }>(), {
 	displayLimit: 20,
+	direction: 'down',
 });
 
 const emit = defineEmits<{
@@ -134,6 +142,8 @@ const fetching = ref(true);
 
 const moreFetching = ref(false);
 const more = ref(false);
+const moreAhead = ref(false);
+const moreFetchingAhead = ref(false);
 const preventAppearFetchMore = ref(false);
 const preventAppearFetchMoreTimer = ref<number | null>(null);
 const isBackTop = ref(false);
@@ -226,6 +236,10 @@ async function init(): Promise<void> {
 		offset.value = res.length;
 		error.value = false;
 		fetching.value = false;
+
+		if (props.direction === 'both' && res.length > 0) {
+			moreAhead.value = true;
+		}
 	}, err => {
 		error.value = true;
 		fetching.value = false;
@@ -327,6 +341,44 @@ const fetchMoreAhead = async (): Promise<void> => {
 	});
 };
 
+const fetchNewer = async (): Promise<void> => {
+	if (!moreAhead.value || fetching.value || moreFetchingAhead.value || items.value.size === 0) return;
+	moreFetchingAhead.value = true;
+	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
+	// Strip date params to avoid creating a bounded window query on the backend
+	const { sinceDate, untilDate, ...restParams } = params as Record<string, unknown>;
+	await misskeyApi<MisskeyEntity[]>(props.pagination.endpoint, {
+		...restParams,
+		limit: SECOND_FETCH_LIMIT,
+		sinceId: Array.from(items.value.keys()).at(0), // newest item
+	}).then(res => {
+		if (res.length === 0) {
+			moreAhead.value = false;
+		} else {
+			// sinceId-only returns ASC order; reverse to get newest-first
+			const reversed = [...res].reverse();
+
+			const oldHeight = scrollableElement.value ? scrollableElement.value.scrollHeight : getBodyScrollHeight();
+			const oldScroll = scrollableElement.value ? scrollableElement.value.scrollTop : window.scrollY;
+
+			items.value = new Map([...arrayToEntries(reversed), ...items.value]);
+
+			nextTick(() => {
+				if (scrollableElement.value) {
+					scroll(scrollableElement.value, { top: oldScroll + (scrollableElement.value.scrollHeight - oldHeight), behavior: 'instant' });
+				} else {
+					window.scroll({ top: oldScroll + (getBodyScrollHeight() - oldHeight), behavior: 'instant' });
+				}
+			});
+
+			moreAhead.value = true;
+		}
+		moreFetchingAhead.value = false;
+	}, err => {
+		moreFetchingAhead.value = false;
+	});
+};
+
 /**
  * Appear（IntersectionObserver）によってfetchMoreが呼ばれる場合、
  * APPEAR_MINIMUM_INTERVALミリ秒以内に2回fetchMoreが呼ばれるのを防ぐ
@@ -349,6 +401,12 @@ const appearFetchMore = async (): Promise<void> => {
 const appearFetchMoreAhead = async (): Promise<void> => {
 	if (preventAppearFetchMore.value) return;
 	await fetchMoreAhead();
+	fetchMoreAppearTimeout();
+};
+
+const appearFetchNewer = async (): Promise<void> => {
+	if (preventAppearFetchMore.value) return;
+	await fetchNewer();
 	fetchMoreAppearTimeout();
 };
 
