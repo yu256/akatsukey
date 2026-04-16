@@ -137,15 +137,15 @@ const paginationQuery = computed<Paging | null>(() => {
 	}
 });
 
-async function loadFromTime() {
+function loadFromTime() {
 	if (!targetDateTime.value) return;
 
-	try {
-		const targetDate = new Date(targetDateTime.value);
-		untilDate.value = targetDate.getTime();
-	} catch (error) {
-		console.error('Failed to load timeline from specified time:', error);
+	const targetDate = new Date(targetDateTime.value);
+	if (isNaN(targetDate.getTime())) {
+		console.error('Invalid datetime input:', targetDateTime.value);
+		return;
 	}
+	untilDate.value = targetDate.getTime();
 }
 
 function formatDateTime(dateTimeStr: string): string {
@@ -154,11 +154,9 @@ function formatDateTime(dateTimeStr: string): string {
 }
 
 function reloadTimeline() {
-	return new Promise<void>((res) => {
-		if (paginationComponent.value == null) return;
-		paginationComponent.value.reload().then(() => {
-			res();
-		});
+	return new Promise<void>((res, rej) => {
+		if (paginationComponent.value == null) { res(); return; }
+		paginationComponent.value.reload().then(res).catch(rej);
 	});
 }
 

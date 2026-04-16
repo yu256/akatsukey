@@ -47,7 +47,7 @@ export const meta = {
 		credentialRequiredForHistorical: {
 			message: 'Credential required for historical timeline access.',
 			code: 'CREDENTIAL_REQUIRED',
-			id: 'timeline-historical-access-denied',
+			id: 'f34e8f8e-5f48-4c8c-a8df-3f5f9c8b8d1e',
 		},
 	},
 } as const;
@@ -93,16 +93,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
-			// sinceDate/sinceId/untilDate/untilIdが指定された場合でログインしていない場合はエラー
-			if ((ps.sinceDate != null || ps.sinceId != null || ps.untilDate != null || ps.untilId != null) && me == null) {
+			// sinceDate/untilDateが指定された場合でログインしていない場合はエラー
+			if ((ps.sinceDate != null || ps.untilDate != null) && me == null) {
 				throw new ApiError(meta.errors.credentialRequiredForHistorical);
 			}
 
 			const serverSettings = await this.metaService.fetch();
 
-			// sinceDate/sinceId/untilDate/untilIdが指定された場合は、古いノートを確実に取得するためDBから直接取得
+			// sinceDate/untilDateが指定された場合は、特定時刻へのアクセスのためDBから直接取得
+			// sinceId/untilIdはページネーションカーソルのため通常のfanoutキャッシュを使用する
 			// ただし、ログインユーザーのみに制限
-			const shouldUseDbDirectly = (ps.sinceDate != null || ps.sinceId != null || ps.untilDate != null || ps.untilId != null) && me != null;
+			const shouldUseDbDirectly = (ps.sinceDate != null || ps.untilDate != null) && me != null;
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({
