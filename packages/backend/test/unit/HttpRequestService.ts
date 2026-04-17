@@ -6,6 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as http from 'node:http';
+import got from 'got';
 import { Test } from '@nestjs/testing';
 import { DI } from '@/di-symbols.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -259,6 +260,40 @@ describe('HttpRequestService', () => {
 			await expect(
 				httpRequestService.send('https://user:pass@example.com/', {}, { throwErrorWhenResponseNotOk: true }),
 			).rejects.toThrow(/credentials/i);
+		});
+
+		// These tests use got directly with httpAgent to exercise the actual
+		// consumer pattern that third-party libraries (summaly, etc.) follow.
+		// They verify end-to-end protection, not just the guard in isolation.
+		test('got via httpAgent blocks IPv4 literal (createConnection guard)', async () => {
+			await expect(
+				got('http://127.0.0.1:9999/', {
+					agent: { http: httpRequestService.httpAgent },
+					retry: { limit: 0 },
+					timeout: { request: 2000 },
+				}),
+			).rejects.toMatchObject({ code: 'ESSRF' });
+		});
+
+		test('got via httpAgent blocks IPv6 literal (createConnection guard)', async () => {
+			// Node passes the unbracketed form "::1" to createConnection.
+			await expect(
+				got('http://[::1]:9999/', {
+					agent: { http: httpRequestService.httpAgent },
+					retry: { limit: 0 },
+					timeout: { request: 2000 },
+				}),
+			).rejects.toMatchObject({ code: 'ESSRF' });
+		});
+
+		test('got via httpAgent blocks hostname that resolves to private IP (safeLookup guard)', async () => {
+			await expect(
+				got('http://localhost:9999/', {
+					agent: { http: httpRequestService.httpAgent },
+					retry: { limit: 0 },
+					timeout: { request: 2000 },
+				}),
+			).rejects.toMatchObject({ code: 'ESSRF' });
 		});
 	});
 

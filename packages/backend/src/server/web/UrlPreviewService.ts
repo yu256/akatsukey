@@ -82,10 +82,12 @@ export class UrlPreviewService {
 				await summaly(url, {
 					followRedirects: false,
 					lang: lang ?? 'ja-JP',
-					agent: this.config.proxy ? {
+					// Always pass our SSRF-safe agents so the wrapped DNS lookup
+					// rejects private/reserved addresses, regardless of proxy config.
+					agent: {
 						http: this.httpRequestService.httpAgent,
 						https: this.httpRequestService.httpsAgent,
-					} : undefined,
+					},
 				});
 
 			this.logger.succ(`Got preview of ${url}: ${summary.title}`);

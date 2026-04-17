@@ -71,6 +71,15 @@ export class DownloadService {
 				limit: 0,
 			},
 			enableUnixSockets: false,
+			hooks: {
+				beforeRedirect: [
+					(options) => {
+						// Re-validate every redirect destination for protocol, credentials, and IP literals.
+						// DNS-resolved private IPs are already blocked at the agent's lookup level.
+						this.httpRequestService.validateUrl(options.url!.toString());
+					},
+				],
+			},
 		}).on('response', (res: Got.Response) => {
 			if ((process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') && !this.config.proxy && res.ip) {
 				if (this.httpRequestService.isPrivateIp(res.ip)) {

@@ -85,19 +85,19 @@ export class HttpRequestService {
 
 		const safeLookup = this.createSafeLookup(cache.lookup as unknown as net.LookupFunction);
 
-		this.http = new http.Agent({
+		this.http = this.wrapAgentForIpLiterals(new http.Agent({
 			keepAlive: true,
 			keepAliveMsecs: 30 * 1000,
 			lookup: safeLookup,
 			localAddress: config.outgoingAddress,
-		});
+		}));
 
-		this.https = new https.Agent({
+		this.https = this.wrapAgentForIpLiterals(new https.Agent({
 			keepAlive: true,
 			keepAliveMsecs: 30 * 1000,
 			lookup: safeLookup,
 			localAddress: config.outgoingAddress,
-		});
+		}));
 
 		const maxSockets = Math.max(256, config.deliverJobConcurrency ?? 128);
 
@@ -124,6 +124,38 @@ export class HttpRequestService {
 				localAddress: config.outgoingAddress,
 			})
 			: this.https;
+	}
+
+	/**
+	 * Wrap an http/https agent's createConnection to reject IP-literal hostnames
+	 * that point into private/reserved ranges. DNS-resolved hosts are already
+	 * blocked via the safeLookup wrapper, but IP literals bypass DNS entirely,
+	 * so this is the only place we can catch them for arbitrary agent consumers
+	 * (including third-party libraries like summaly/got that don't go through
+	 * HttpRequestService.validateUrl).
+	 */
+	@bindThis
+	private wrapAgentForIpLiterals<T extends http.Agent>(agent: T): T {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const agentAny = agent as any;
+		const originalCreateConnection = agentAny.createConnection;
+		if (typeof originalCreateConnection !== 'function') {
+			return agent;
+		}
+		agentAny.createConnection = (options: net.NetConnectOpts & { host?: string; hostname?: string }, callback?: (err: Error | null, stream: net.Socket) => void) => {
+			const host = options.host ?? options.hostname;
+			if (host && ipaddr.isValid(host) && this.isPrivateIp(host)) {
+				const err = Object.assign(new Error(`SSRF blocked: connection to IP ${host} is not allowed`), { code: 'ESSRF' });
+				this.logger.warn(`SSRF blocked at connection: ${host}`);
+				if (callback) {
+					queueMicrotask(() => callback(err, null as unknown as net.Socket));
+					return null as unknown as net.Socket;
+				}
+				throw err;
+			}
+			return originalCreateConnection.call(agent, options, callback);
+		};
+		return agent;
 	}
 
 	/**
