@@ -76,6 +76,7 @@ type TimelineQueryType = {
   withFiles?: boolean,
   listId?: string,
   untilDate?: number,
+  allowHistorical?: boolean,
 }
 
 const paginationQuery = computed<Paging | null>(() => {
@@ -90,6 +91,7 @@ const paginationQuery = computed<Paging | null>(() => {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			untilDate: untilDate.value,
+			allowHistorical: true,
 		};
 	} else if (props.src === 'local') {
 		endpoint = 'notes/local-timeline';
@@ -98,6 +100,7 @@ const paginationQuery = computed<Paging | null>(() => {
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
 			untilDate: untilDate.value,
+			allowHistorical: true,
 		};
 	} else if (props.src === 'social') {
 		endpoint = 'notes/hybrid-timeline';
@@ -106,6 +109,7 @@ const paginationQuery = computed<Paging | null>(() => {
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
 			untilDate: untilDate.value,
+			allowHistorical: true,
 		};
 	} else if (props.src === 'global') {
 		endpoint = 'notes/global-timeline';
@@ -121,6 +125,7 @@ const paginationQuery = computed<Paging | null>(() => {
 			withFiles: props.onlyFiles ? true : undefined,
 			listId: props.list,
 			untilDate: untilDate.value,
+			allowHistorical: true,
 		};
 	} else {
 		endpoint = null;

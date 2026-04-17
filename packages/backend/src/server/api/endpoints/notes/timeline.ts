@@ -17,6 +17,8 @@ import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { MetaService } from '@/core/MetaService.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import { FanoutTimelineName, FanoutTimelineService } from '@/core/FanoutTimelineService.js';
+import { excludePureRenotes } from '@/misc/is-pure-renote.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -49,6 +51,7 @@ export const paramDef = {
 		includeLocalRenotes: { type: 'boolean', default: true },
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
+		allowHistorical: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -67,6 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private cacheService: CacheService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
+		private fanoutTimelineService: FanoutTimelineService,
 		private userFollowingService: UserFollowingService,
 		private queryService: QueryService,
 		private metaService: MetaService,
@@ -77,9 +81,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const serverSettings = await this.metaService.fetch();
 
-			// sinceDate/untilDateが指定された場合は、特定時刻へのアクセスのためDBから直接取得
-			// sinceId/untilIdはページネーションカーソルのため通常のfanoutキャッシュを使用する
-			const shouldUseDbDirectly = ps.sinceDate != null || ps.untilDate != null;
+			const redisTimelines: FanoutTimelineName[] = ps.withFiles ? [`homeTimelineWithFiles:${me.id}`] : [`homeTimeline:${me.id}`];
+
+			// sinceDate/untilDateが指定された場合、またはallowHistoricalフラグと共に
+			// fanoutキャッシュの保持範囲より古いcursorが指定された場合は、DBから直接取得する。
+			// 保持範囲判定はRedis上の最古キャッシュIDと比較することでインスタンスの投稿量に
+			// 依存せずに行う。これによりallowHistoricalで通常paginationをDB負荷パスに
+			// 流す攻撃を防ぐ。
+			const shouldUseDbDirectly = ps.sinceDate != null || ps.untilDate != null
+				|| (ps.allowHistorical && await this.fanoutTimelineService.cursorsPrecedeCache(redisTimelines, untilId, sinceId));
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({
@@ -113,7 +123,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				allowPartial: ps.allowPartial,
 				me,
 				useDbFallback: serverSettings.enableFanoutTimelineDbFallback,
-				redisTimelines: ps.withFiles ? [`homeTimelineWithFiles:${me.id}`] : [`homeTimeline:${me.id}`],
+				redisTimelines,
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
 				noteFilter: note => {
@@ -243,7 +253,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		}
 
 		if (ps.withRenotes === false) {
-			query.andWhere('note.renoteId IS NULL');
+			query.andWhere(new Brackets(qb => excludePureRenotes(qb)));
 		}
 		//#endregion
 

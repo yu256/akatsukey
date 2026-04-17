@@ -111,4 +111,32 @@ export class FanoutTimelineService {
 	public purge(name: FanoutTimelineName) {
 		return this.redisForTimelines.del('list:' + name);
 	}
+
+	// 指定cursorがfanoutキャッシュの保持範囲より古いかを判定する。
+	// 複数timelineを与えた場合、いずれかのtimelineがcursorをカバーできない場合にtrueを返す
+	// （最も新しい「最古キャッシュID」との比較で判定するため、最短retentionのtimelineに合わせた保守的な判定となる）。
+	// 空のtimelineはカバー不能とみなす。paginationが排他的（id < untilId）なため境界は<=で判定する。
+	// すべてのtimelineが空で、かつcursorがすべてnullの場合はfalse（キャッシュ無しの新規状態）。
+	@bindThis
+	public async cursorsPrecedeCache(names: FanoutTimelineName[], ...cursors: (string | null)[]): Promise<boolean> {
+		if (names.length === 0) return false;
+		const pipeline = this.redisForTimelines.pipeline();
+		for (const n of names) {
+			pipeline.lindex('list:' + n, -1);
+		}
+		const res = await pipeline.exec();
+		if (res == null) return false;
+		let newestOldest: string | null = null;
+		for (const [, value] of res) {
+			const id = value as string | null;
+			if (id == null) {
+				// 空のtimelineはキャッシュカバー範囲外とみなし、cursorが指定されていればDB直行させる
+				return cursors.some(c => c != null);
+			}
+			if (newestOldest == null || id > newestOldest) newestOldest = id;
+		}
+		if (newestOldest == null) return false;
+		const threshold = newestOldest;
+		return cursors.some(c => c != null && c <= threshold);
+	}
 }

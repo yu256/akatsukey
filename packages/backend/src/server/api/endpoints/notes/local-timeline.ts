@@ -16,6 +16,8 @@ import { QueryService } from '@/core/QueryService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import { FanoutTimelineName, FanoutTimelineService } from '@/core/FanoutTimelineService.js';
+import { excludePureRenotes } from '@/misc/is-pure-renote.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -64,6 +66,7 @@ export const paramDef = {
 		allowPartial: { type: 'boolean', default: false }, // true is recommended but for compatibility false by default
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
+		allowHistorical: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -79,6 +82,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private activeUsersChart: ActiveUsersChart,
 		private idService: IdService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
+		private fanoutTimelineService: FanoutTimelineService,
 		private queryService: QueryService,
 		private metaService: MetaService,
 	) {
@@ -93,17 +97,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
-			// sinceDate/untilDateが指定された場合でログインしていない場合はエラー
-			if ((ps.sinceDate != null || ps.untilDate != null) && me == null) {
+			// sinceDate/untilDate/allowHistoricalが指定された場合でログインしていない場合はエラー
+			if ((ps.sinceDate != null || ps.untilDate != null || ps.allowHistorical) && me == null) {
 				throw new ApiError(meta.errors.credentialRequiredForHistorical);
 			}
 
 			const serverSettings = await this.metaService.fetch();
 
-			// sinceDate/untilDateが指定された場合は、特定時刻へのアクセスのためDBから直接取得
-			// sinceId/untilIdはページネーションカーソルのため通常のfanoutキャッシュを使用する
-			// ただし、ログインユーザーのみに制限
-			const shouldUseDbDirectly = (ps.sinceDate != null || ps.untilDate != null) && me != null;
+			const redisTimelines: FanoutTimelineName[] =
+				ps.withFiles ? ['localTimelineWithFiles']
+				: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
+				: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
+				: ['localTimeline'];
+
+			// sinceDate/untilDateが指定された場合、またはallowHistoricalフラグと共に
+			// fanoutキャッシュの保持範囲より古いcursorが指定された場合は、DBから直接取得する。
+			// 保持範囲判定はRedis上の最古キャッシュIDと比較することでインスタンスの投稿量に
+			// 依存せずに行う。これによりallowHistoricalで通常paginationをDB負荷パスに
+			// 流す攻撃を防ぐ。ログインユーザーのみに制限。
+			const shouldUseDbDirectly = me != null && (
+				ps.sinceDate != null || ps.untilDate != null
+				|| (ps.allowHistorical && await this.fanoutTimelineService.cursorsPrecedeCache(redisTimelines, untilId, sinceId))
+			);
 
 			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
 				const timeline = await this.getFromDb({
@@ -112,6 +127,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit: ps.limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
 				}, me);
 
 				process.nextTick(() => {
@@ -130,11 +146,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				allowPartial: ps.allowPartial,
 				me,
 				useDbFallback: serverSettings.enableFanoutTimelineDbFallback,
-				redisTimelines:
-					ps.withFiles ? ['localTimelineWithFiles']
-					: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
-					: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
-					: ['localTimeline'],
+				redisTimelines,
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
@@ -143,6 +155,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
 				}, me),
 			});
 
@@ -162,6 +175,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		limit: number,
 		withFiles: boolean,
 		withReplies: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser | null) {
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 			ps.sinceId, ps.untilId)
@@ -191,6 +205,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							.andWhere('note.replyUserId = note.userId');
 					}));
 			}));
+		}
+
+		if (ps.withRenotes === false) {
+			query.andWhere(new Brackets(qb => excludePureRenotes(qb)));
 		}
 
 		return await query.limit(ps.limit).getMany();

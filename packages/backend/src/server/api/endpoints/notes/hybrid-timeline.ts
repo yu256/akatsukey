@@ -12,12 +12,13 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
-import { FanoutTimelineName } from '@/core/FanoutTimelineService.js';
+import { FanoutTimelineName, FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
+import { excludePureRenotes } from '@/misc/is-pure-renote.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -66,6 +67,7 @@ export const paramDef = {
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
 		withReplies: { type: 'boolean', default: false },
+		allowHistorical: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -87,6 +89,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userFollowingService: UserFollowingService,
 		private metaService: MetaService,
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
+		private fanoutTimelineService: FanoutTimelineService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -100,29 +103,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.withReplies && ps.withFiles) throw new ApiError(meta.errors.bothWithRepliesAndWithFiles);
 
 			const serverSettings = await this.metaService.fetch();
-
-			// sinceDate/untilDateが指定された場合は、特定時刻へのアクセスのためDBから直接取得
-			// sinceId/untilIdはページネーションカーソルのため通常のfanoutキャッシュを使用する
-			const shouldUseDbDirectly = ps.sinceDate != null || ps.untilDate != null;
-
-			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
-				const timeline = await this.getFromDb({
-					untilId,
-					sinceId,
-					limit: ps.limit,
-					includeMyRenotes: ps.includeMyRenotes,
-					includeRenotedMyNotes: ps.includeRenotedMyNotes,
-					includeLocalRenotes: ps.includeLocalRenotes,
-					withFiles: ps.withFiles,
-					withReplies: ps.withReplies,
-				}, me);
-
-				process.nextTick(() => {
-					this.activeUsersChart.read(me);
-				});
-
-				return await this.noteEntityService.packMany(timeline, me);
-			}
 
 			let timelineConfig: FanoutTimelineName[];
 
@@ -144,6 +124,34 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				];
 			}
 
+			// sinceDate/untilDateが指定された場合、またはallowHistoricalフラグと共に
+			// fanoutキャッシュの保持範囲より古いcursorが指定された場合は、DBから直接取得する。
+			// 保持範囲判定はRedis上の最古キャッシュIDと比較することでインスタンスの投稿量に
+			// 依存せずに行う。これによりallowHistoricalで通常paginationをDB負荷パスに
+			// 流す攻撃を防ぐ。
+			const shouldUseDbDirectly = ps.sinceDate != null || ps.untilDate != null
+				|| (ps.allowHistorical && await this.fanoutTimelineService.cursorsPrecedeCache(timelineConfig, untilId, sinceId));
+
+			if (!serverSettings.enableFanoutTimeline || shouldUseDbDirectly) {
+				const timeline = await this.getFromDb({
+					untilId,
+					sinceId,
+					limit: ps.limit,
+					includeMyRenotes: ps.includeMyRenotes,
+					includeRenotedMyNotes: ps.includeRenotedMyNotes,
+					includeLocalRenotes: ps.includeLocalRenotes,
+					withFiles: ps.withFiles,
+					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
+				}, me);
+
+				process.nextTick(() => {
+					this.activeUsersChart.read(me);
+				});
+
+				return await this.noteEntityService.packMany(timeline, me);
+			}
+
 			const redisTimeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -163,6 +171,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					withRenotes: ps.withRenotes,
 				}, me),
 			});
 
@@ -183,6 +192,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		includeLocalRenotes: boolean,
 		withFiles: boolean,
 		withReplies: boolean,
+		withRenotes: boolean,
 	}, me: MiLocalUser) {
 		const followees = await this.userFollowingService.getFollowees(me.id);
 		const followingChannels = await this.channelFollowingsRepository.find({
@@ -268,6 +278,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
+		}
+
+		if (ps.withRenotes === false) {
+			query.andWhere(new Brackets(qb => excludePureRenotes(qb)));
 		}
 		//#endregion
 

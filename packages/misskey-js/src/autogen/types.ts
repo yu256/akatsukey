@@ -20658,6 +20658,8 @@ export type operations = {
           withRenotes?: boolean;
           /** @default false */
           withReplies?: boolean;
+          /** @default false */
+          allowHistorical?: boolean;
         };
       };
     };
@@ -20726,6 +20728,8 @@ export type operations = {
           allowPartial?: boolean;
           sinceDate?: number;
           untilDate?: number;
+          /** @default false */
+          allowHistorical?: boolean;
         };
       };
     };
@@ -21626,6 +21630,8 @@ export type operations = {
           withFiles?: boolean;
           /** @default true */
           withRenotes?: boolean;
+          /** @default false */
+          allowHistorical?: boolean;
         };
       };
     };
@@ -21819,6 +21825,8 @@ export type operations = {
            * @default false
            */
           withFiles?: boolean;
+          /** @default false */
+          allowHistorical?: boolean;
         };
       };
     };
