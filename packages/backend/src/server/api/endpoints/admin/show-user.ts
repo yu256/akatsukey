@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { RoleEntityService } from '@/core/entities/RoleEntityService.js';
+import { SigninEntityService } from '@/core/entities/SigninEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
 
@@ -197,6 +198,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private roleService: RoleService,
 		private roleEntityService: RoleEntityService,
+		private signinEntityService: SigninEntityService,
 		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
@@ -217,7 +219,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('cannot show info of admin');
 			}
 
-			const signins = await this.signinsRepository.findBy({ userId: user.id });
+			const signinRecords = await this.signinsRepository.findBy({ userId: user.id });
+			const signins = await Promise.all(signinRecords.map(s => this.signinEntityService.pack(s)));
 
 			const roleAssigns = await this.roleService.getUserAssigns(user.id);
 			const roles = await this.roleService.getUserRoles(user.id);

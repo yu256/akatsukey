@@ -18,6 +18,7 @@ import { getIpHash } from '@/misc/get-ip-hash.js';
 import type { MiLocalUser } from '@/models/User.js';
 import { IdService } from '@/core/IdService.js';
 import { bindThis } from '@/decorators.js';
+import { filterSigninHeaders } from '@/misc/signin-headers.js';
 import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 import { RateLimiterService } from './RateLimiterService.js';
@@ -131,7 +132,7 @@ export class SigninApiService {
 				id: this.idService.gen(),
 				userId: user.id,
 				ip: request.ip,
-				headers: request.headers as any,
+				headers: filterSigninHeaders(request.headers),
 				success: false,
 			});
 

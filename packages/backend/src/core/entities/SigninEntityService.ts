@@ -8,6 +8,7 @@ import type { } from '@/models/Blocking.js';
 import type { MiSignin } from '@/models/Signin.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
+import { filterSigninHeaders } from '@/misc/signin-headers.js';
 
 @Injectable()
 export class SigninEntityService {
@@ -24,7 +25,10 @@ export class SigninEntityService {
 			id: src.id,
 			createdAt: this.idService.parse(src.id).date.toISOString(),
 			ip: src.ip,
-			headers: src.headers,
+			// Filter here too so pre-existing rows that persisted sensitive
+			// headers (Authorization, Cookie, etc.) before the write-path
+			// filter was added don't leak to /i/signin-history clients.
+			headers: filterSigninHeaders(src.headers),
 			success: src.success,
 		};
 	}

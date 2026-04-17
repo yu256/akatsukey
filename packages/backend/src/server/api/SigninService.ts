@@ -11,6 +11,7 @@ import type { MiLocalUser } from '@/models/User.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SigninEntityService } from '@/core/entities/SigninEntityService.js';
 import { bindThis } from '@/decorators.js';
+import { filterSigninHeaders } from '@/misc/signin-headers.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class SigninService {
 				id: this.idService.gen(),
 				userId: user.id,
 				ip: request.ip,
-				headers: request.headers as any,
+				headers: filterSigninHeaders(request.headers),
 				success: true,
 			}).then(x => this.signinsRepository.findOneByOrFail(x.identifiers[0]));
 
