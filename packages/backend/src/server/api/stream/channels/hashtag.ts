@@ -31,9 +31,13 @@ class HashtagChannel extends Channel {
 
 	@bindThis
 	public async init(params: any) {
+		if (!Array.isArray(params.q)) return;
+		if (!params.q.every((x: unknown) => (
+			Array.isArray(x) &&
+			x.length >= 1 &&
+			x.every(y => typeof y === 'string')
+		))) return;
 		this.q = params.q;
-
-		if (this.q == null) return;
 
 		// Subscribe stream
 		this.subscriber.on('notesStream', this.onNote);
