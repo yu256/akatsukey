@@ -21,9 +21,7 @@ class RoleTimelineChannel extends Channel {
 	private roleId: string;
 
 	constructor(
-		@Inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,
-
 		private noteEntityService: NoteEntityService,
 		private noteStreamingHidingService: NoteStreamingHidingService,
 
