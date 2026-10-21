@@ -201,6 +201,23 @@ export default class Connection {
 
 	@bindThis
 	private async onNoteStreamMessage(data: GlobalEvents['note']['payload']) {
+		// 投稿者本人には公開範囲による制限を適用しない
+		if (data.body.userId !== this.user?.id) {
+			if (data.body.visibility === 'specified' && (this.user == null || !data.body.visibleUserIds.includes(this.user.id))) {
+				return;
+			}
+
+			if (data.body.visibility === 'followers') {
+				if (this.user == null) {
+					return;
+				}
+				const isReplyOrMention = data.body.replyUserId === this.user.id || data.body.mentions.includes(this.user.id);
+				if (!isReplyOrMention && !Object.hasOwn(this.following, data.body.userId)) {
+					return;
+				}
+			}
+		}
+
 		this.sendMessageToWs('noteUpdated', {
 			id: data.body.id,
 			type: data.type,
