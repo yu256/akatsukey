@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
 import { bindThis } from '@/decorators.js';
-import { RoleService } from '@/core/RoleService.js';
+import { DI } from '@/di-symbols.js';
+import type { RolesRepository } from '@/models/_.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import Channel, { type MiChannelService } from '../channel.js';
 
@@ -20,9 +21,11 @@ class RoleTimelineChannel extends Channel {
 	private roleId: string;
 
 	constructor(
+		@Inject(DI.rolesRepository)
+		private rolesRepository: RolesRepository,
+
 		private noteEntityService: NoteEntityService,
 		private noteStreamingHidingService: NoteStreamingHidingService,
-		private roleservice: RoleService,
 
 		id: string,
 		connection: Channel['connection'],
@@ -33,19 +36,30 @@ class RoleTimelineChannel extends Channel {
 
 	@bindThis
 	public async init(params: any) {
-		this.roleId = params.roleId as string;
+		if (typeof params.roleId !== 'string') return;
+		this.roleId = params.roleId;
 
+		if (!await this.isAvailable()) return;
 		this.subscriber.on(`roleTimelineStream:${this.roleId}`, this.onEvent);
 	}
 
 	@bindThis
+	private async isAvailable(): Promise<boolean> {
+		return await this.rolesRepository.exists({
+			where: {
+				id: this.roleId,
+				isPublic: true,
+				isExplorable: true,
+			},
+		});
+	}
+
+	@bindThis
 	private async onEvent(data: GlobalEvents['roleTimeline']['payload']) {
+		if (!await this.isAvailable()) return;
+
 		if (data.type === 'note') {
 			let note = data.body;
-
-			if (!(await this.roleservice.isExplorable({ id: this.roleId }))) {
-				return;
-			}
 			if (note.visibility !== 'public') return;
 
 			// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
@@ -79,18 +93,20 @@ export class RoleTimelineChannelService implements MiChannelService<false> {
 	public readonly kind = RoleTimelineChannel.kind;
 
 	constructor(
+		@Inject(DI.rolesRepository)
+		private rolesRepository: RolesRepository,
+
 		private noteEntityService: NoteEntityService,
 		private noteStreamingHidingService: NoteStreamingHidingService,
-		private roleservice: RoleService,
 	) {
 	}
 
 	@bindThis
 	public create(id: string, connection: Channel['connection']): RoleTimelineChannel {
 		return new RoleTimelineChannel(
+			this.rolesRepository,
 			this.noteEntityService,
 			this.noteStreamingHidingService,
-			this.roleservice,
 			id,
 			connection,
 		);
