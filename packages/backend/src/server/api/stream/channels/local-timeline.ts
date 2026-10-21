@@ -9,6 +9,7 @@ import { isUserRelated } from '@/misc/is-user-related.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { MetaService } from '@/core/MetaService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import Channel, { type MiChannelService } from '../channel.js';
@@ -25,6 +26,7 @@ class LocalTimelineChannel extends Channel {
 		private metaService: MetaService,
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
+		private noteStreamingHidingService: NoteStreamingHidingService,
 
 		id: string,
 		connection: Channel['connection'],
@@ -70,6 +72,9 @@ class LocalTimelineChannel extends Channel {
 
 		if (note.renote && !note.text && isUserRelated(note, this.userIdsWhoMeMutingRenotes)) return;
 
+		const { shouldSkip } = await this.noteStreamingHidingService.processHiding(note, this.user?.id ?? null);
+		if (shouldSkip) return;
+
 		if (this.user && note.renoteId && !note.text) {
 			if (note.renote && Object.keys(note.renote.reactions).length > 0) {
 				const myRenoteReaction = await this.noteEntityService.populateMyReaction(note.renote, this.user.id);
@@ -99,6 +104,7 @@ export class LocalTimelineChannelService implements MiChannelService<false> {
 		private metaService: MetaService,
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
+		private noteStreamingHidingService: NoteStreamingHidingService,
 	) {
 	}
 
@@ -108,6 +114,7 @@ export class LocalTimelineChannelService implements MiChannelService<false> {
 			this.metaService,
 			this.roleService,
 			this.noteEntityService,
+			this.noteStreamingHidingService,
 			id,
 			connection,
 		);
