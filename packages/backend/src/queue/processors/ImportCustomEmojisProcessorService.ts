@@ -5,18 +5,48 @@
 
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { ZipReader } from 'slacc';
+import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, DriveFilesRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { createTempDir } from '@/misc/create-temp.js';
+import { ZipFile } from '@/misc/zip.js';
 import { DriveService } from '@/core/DriveService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { DbUserImportJobData } from '../types.js';
+
+const MAX_META_JSON_SIZE = 64 * 1024 * 1024;
+const MAX_EMOJI_FILE_SIZE = 32 * 1024 * 1024;
+const MAX_NAME_LENGTH = 255;
+
+const FILE_NAME_PATTERN = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9]+)*$/;
+const EMOJI_NAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+
+type EmojiRecord = {
+	fileName: string;
+	downloaded: boolean;
+	emoji: {
+		name: string;
+		category: string | null;
+		aliases: string[];
+		license: string | null;
+		isSensitive: boolean;
+		localOnly: boolean;
+	};
+};
+
+function isValidName(value: unknown, pattern: RegExp): value is string {
+	return typeof value === 'string' && value.length <= MAX_NAME_LENGTH && pattern.test(value);
+}
+
+function truncateForLog(value: unknown): string {
+	const text = typeof value === 'string' ? value : JSON.stringify(value) ?? String(value);
+	return text.length > MAX_NAME_LENGTH ? text.slice(0, MAX_NAME_LENGTH) + '...' : text;
+}
 
 // TODO: 名前衝突時の動作を選べるようにする
 @Injectable()
@@ -58,63 +88,128 @@ export class ImportCustomEmojisProcessorService {
 		try {
 			fs.writeFileSync(destPath, '', 'binary');
 			await this.downloadService.downloadUrl(file.url, destPath);
-		} catch (e) { // TODO: 何度か再試行
-			if (e instanceof Error || typeof e === 'string') {
-				this.logger.error(e);
-			}
-			throw e;
-		}
-
-		const outputPath = path + '/emojis';
-		try {
-			this.logger.succ(`Unzipping to ${outputPath}`);
-			ZipReader.withDestinationPath(outputPath).viaBuffer(await fs.promises.readFile(destPath));
-			const metaRaw = fs.readFileSync(outputPath + '/meta.json', 'utf-8');
-			const meta = JSON.parse(metaRaw);
-
-			for (const record of meta.emojis) {
-				if (!record.downloaded) continue;
-				if (!/^[a-zA-Z0-9_]+?([a-zA-Z0-9\.]+)?$/.test(record.fileName)) {
-					this.logger.error(`invalid filename: ${record.fileName}`);
-					continue;
-				}
-				const emojiInfo = record.emoji;
-				if (!/^[a-zA-Z0-9_]+$/.test(emojiInfo.name)) {
-					this.logger.error(`invalid emojiname: ${emojiInfo.name}`);
-					continue;
-				}
-				const emojiPath = outputPath + '/' + record.fileName;
-				await this.emojisRepository.delete({
-					name: emojiInfo.name,
-				});
-				const driveFile = await this.driveService.addFile({
-					user: null,
-					path: emojiPath,
-					name: record.fileName,
-					force: true,
-				});
-				await this.customEmojiService.add({
-					name: emojiInfo.name,
-					category: emojiInfo.category,
-					host: null,
-					aliases: emojiInfo.aliases,
-					driveFile,
-					license: emojiInfo.license,
-					isSensitive: emojiInfo.isSensitive,
-					localOnly: emojiInfo.localOnly,
-					roleIdsThatCanBeUsedThisEmojiAsReaction: [],
-				});
-			}
-
-			cleanup();
-
-			this.logger.succ('Imported');
 		} catch (e) {
 			if (e instanceof Error || typeof e === 'string') {
 				this.logger.error(e);
 			}
 			cleanup();
 			throw e;
+		}
+
+		const outputPath = path + '/emojis';
+		try {
+			this.logger.succ(`Unzipping to ${outputPath}`);
+			await fs.promises.mkdir(outputPath);
+
+			const zip = await ZipFile.open(destPath);
+			try {
+				const metaPath = outputPath + '/meta.json';
+				let metaFound = false;
+				for await (const entry of zip.entries()) {
+					if (entry.filename !== 'meta.json') continue;
+					await zip.extractToFile(entry, metaPath, { maxBytes: MAX_META_JSON_SIZE });
+					metaFound = true;
+				}
+				if (!metaFound) {
+					throw new Error('meta.json not found in the archive');
+				}
+
+				const metaRaw = await fs.promises.readFile(metaPath, 'utf-8');
+				const meta = JSON.parse(metaRaw);
+
+				const wanted = new Map<string, EmojiRecord[]>();
+				for (const record of meta.emojis as EmojiRecord[]) {
+					if (!record.downloaded) continue;
+					if (!isValidName(record.fileName, FILE_NAME_PATTERN)) {
+						this.logger.error(`invalid filename: ${truncateForLog(record.fileName)}`);
+						continue;
+					}
+					if (!isValidName(record.emoji?.name, EMOJI_NAME_PATTERN)) {
+						this.logger.error(`invalid emojiname: ${truncateForLog(record.emoji?.name)}`);
+						continue;
+					}
+
+					const records = wanted.get(record.fileName);
+					if (records == null) {
+						wanted.set(record.fileName, [record]);
+					} else {
+						records.push(record);
+					}
+				}
+
+				for await (const entry of zip.entries()) {
+					const records = wanted.get(entry.filename);
+					if (records == null) continue;
+					wanted.delete(entry.filename);
+
+					const emojiPath = outputPath + '/' + entry.filename;
+					try {
+						await zip.extractToFile(entry, emojiPath, { maxBytes: MAX_EMOJI_FILE_SIZE });
+					} catch (e) {
+						if (e instanceof Error || typeof e === 'string') {
+							this.logger.error(`couldn't extract ${entry.filename}: ${e}`);
+						}
+						continue;
+					}
+
+					try {
+						for (const record of records) {
+							await this.importEmoji(record, emojiPath);
+						}
+					} finally {
+						await fs.promises.rm(emojiPath, { force: true });
+					}
+				}
+
+				for (const fileName of wanted.keys()) {
+					this.logger.error(`file not found in the archive: ${fileName}`);
+				}
+			} finally {
+				await zip.close();
+			}
+
+			this.logger.succ('Imported');
+		} catch (e) {
+			if (e instanceof Error || typeof e === 'string') {
+				this.logger.error(e);
+			}
+			throw e;
+		} finally {
+			cleanup();
+		}
+	}
+
+	@bindThis
+	private async importEmoji(record: EmojiRecord, emojiPath: string): Promise<void> {
+		const emojiInfo = record.emoji;
+		try {
+			await this.emojisRepository.delete({
+				name: emojiInfo.name,
+				host: IsNull(),
+			});
+
+			const driveFile = await this.driveService.addFile({
+				user: null,
+				path: emojiPath,
+				name: record.fileName,
+				force: true,
+			});
+
+			await this.customEmojiService.add({
+				name: emojiInfo.name,
+				category: emojiInfo.category,
+				host: null,
+				aliases: emojiInfo.aliases,
+				driveFile,
+				license: emojiInfo.license,
+				isSensitive: emojiInfo.isSensitive,
+				localOnly: emojiInfo.localOnly,
+				roleIdsThatCanBeUsedThisEmojiAsReaction: [],
+			});
+		} catch (e) {
+			if (e instanceof Error || typeof e === 'string') {
+				this.logger.error(`couldn't import ${emojiPath} for ${emojiInfo.name}: ${e}`);
+			}
 		}
 	}
 }
