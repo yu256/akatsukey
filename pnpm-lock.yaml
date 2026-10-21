@@ -321,8 +321,8 @@ importers:
         specifier: 4.1.0
         version: 4.1.0
       probe-image-size:
-        specifier: 7.2.3
-        version: 7.2.3
+        specifier: 7.4.0
+        version: 7.4.0
       promise-limit:
         specifier: 2.7.0
         version: 2.7.0
@@ -16258,8 +16258,8 @@ packages:
       is-ip: 3.1.0
       netmask: 2.0.2
 
-  /probe-image-size@7.2.3:
-    resolution: {integrity: sha512-HubhG4Rb2UH8YtV4ba0Vp5bQ7L78RTONYu/ujmCu5nBI8wGv24s4E9xSKBi0N1MowRpxk76pFCpJtW0KPzOK0w==}
+  /probe-image-size@7.4.0:
+    resolution: {integrity: sha512-cdEprVtZxV+awMde9X+4jILBFYh4CARxVrQaMl4wY4YcPWbul9jntXrIW95NInBDyJwcVUP3U0T6yukN8rMBaQ==}
     dependencies:
       lodash.merge: 4.6.2
       needle: 2.9.1

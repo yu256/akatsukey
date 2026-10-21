@@ -149,7 +149,7 @@
 		"parse5": "7.1.2",
 		"pg": "8.11.3",
 		"pkce-challenge": "4.1.0",
-		"probe-image-size": "7.2.3",
+		"probe-image-size": "7.4.0",
 		"promise-limit": "2.7.0",
 		"pug": "3.0.2",
 		"punycode": "2.3.1",
