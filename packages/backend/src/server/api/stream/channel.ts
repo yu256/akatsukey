@@ -4,6 +4,7 @@
  */
 
 import { bindThis } from '@/decorators.js';
+import type { Packed } from '@/misc/json-schema.js';
 import type Connection from './Connection.js';
 
 /**
@@ -52,6 +53,37 @@ export default abstract class Channel {
 
 	protected get subscriber() {
 		return this.connection.subscriber;
+	}
+
+	protected isNoteVisibleForMe(note: Packed<'Note'>): boolean {
+		// This code must always be synchronized with NoteEntityService.shouldHideNote.
+		const meId = this.connection.user?.id ?? null;
+
+		if (note.visibility === 'specified') {
+			if (meId == null) {
+				return false;
+			} else if (meId === note.userId) {
+				return true;
+			} else {
+				return note.visibleUserIds?.some(id => meId === id) ?? false;
+			}
+		}
+
+		if (note.visibility === 'followers') {
+			if (meId == null) {
+				return false;
+			} else if (meId === note.userId) {
+				return true;
+			} else if (note.reply && meId === note.reply.userId) {
+				return true;
+			} else if (note.mentions && note.mentions.some(id => meId === id)) {
+				return true;
+			} else {
+				return Object.hasOwn(this.following, note.userId);
+			}
+		}
+
+		return true;
 	}
 
 	constructor(id: string, connection: Connection) {
