@@ -15,6 +15,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import type Logger from '@/logger.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
+import { assertActivityMatchesUrls } from '@/core/activitypub/misc/check-against-url.js';
+import type { IObject } from './type.js';
 
 type Request = {
 	url: string;
@@ -201,6 +203,11 @@ export class ApRequestService {
 			validators: [validateContentTypeSetAsActivityPub],
 		});
 
-		return await res.json();
+		const finalUrl = res.url; // redirects may have been involved
+		const activity = await res.json() as IObject;
+
+		assertActivityMatchesUrls(activity, [finalUrl]);
+
+		return activity;
 	}
 }

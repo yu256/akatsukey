@@ -19,6 +19,7 @@ import { bindThis } from '@/decorators.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
+import { assertActivityMatchesUrls } from '@/core/activitypub/misc/check-against-url.js';
 import type { IObject } from '@/core/activitypub/type.js';
 import type { Response } from 'node-fetch';
 import type { URL } from 'node:url';
@@ -306,7 +307,12 @@ export class HttpRequestService {
 			validators: [validateContentTypeSetAsActivityPub],
 		});
 
-		return await res.json() as IObject;
+		const finalUrl = res.url; // redirects may have been involved
+		const activity = await res.json() as IObject;
+
+		assertActivityMatchesUrls(activity, [finalUrl]);
+
+		return activity;
 	}
 
 	@bindThis
