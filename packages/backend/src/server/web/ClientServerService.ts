@@ -198,7 +198,7 @@ export class ClientServerService {
 			// %71ueueとかでリクエストされたら困るため
 			const url = decodeURI(request.routeOptions.url);
 			if (url === bullBoardPath || url.startsWith(bullBoardPath + '/')) {
-				const token = request.cookies.token;
+				const token = request.cookies['queue-token'];
 				if (token == null) {
 					reply.code(401).send('Login required');
 					return;
