@@ -308,7 +308,7 @@ export const uploadFile = async (user?: UserToken, { path, name, blob }: UploadO
 
 	const formData = new FormData();
 	formData.append('file', blob ??
-		new File([await readFile(absPath)], basename(absPath.toString())));
+		new Blob([await readFile(absPath)]), basename(absPath.toString()));
 	formData.append('force', 'true');
 	if (name) {
 		formData.append('name', name);
