@@ -27,6 +27,24 @@ export const $i = accountData ? reactive(JSON.parse(accountData) as Account) : n
 export const iAmModerator = $i != null && ($i.isAdmin === true || $i.isModerator === true);
 export const iAmAdmin = $i != null && $i.isAdmin;
 
+const QUEUE_TOKEN_COOKIE = 'queue-token';
+const QUEUE_TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
+
+function syncQueueTokenCookie(token: string | null): void {
+	// Remove the legacy site-wide Bull dashboard cookie.
+	document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Strict';
+
+	// Clear the scoped cookie before replacing it so signout and account switches are deterministic.
+	document.cookie = `${QUEUE_TOKEN_COOKIE}=; Path=/queue; Max-Age=0; SameSite=Strict`;
+
+	if (token == null) return;
+
+	const secure = location.protocol === 'https:' ? '; Secure' : '';
+	document.cookie = `${QUEUE_TOKEN_COOKIE}=${encodeURIComponent(token)}; Path=/queue; Max-Age=${QUEUE_TOKEN_MAX_AGE}; SameSite=Strict${secure}`;
+}
+
+syncQueueTokenCookie($i?.token ?? null);
+
 export function signinRequired() {
 	if ($i == null) throw new Error('signin required');
 	return $i;
@@ -37,6 +55,7 @@ export async function signout() {
 
 	waiting();
 	miLocalStorage.removeItem('account');
+	syncQueueTokenCookie(null);
 	await removeAccount($i.id);
 	const accounts = await getAccounts();
 
@@ -195,7 +214,7 @@ export async function login(token: Account['token'], redirect?: string) {
 			throw reason;
 		});
 	miLocalStorage.setItem('account', JSON.stringify(me));
-	document.cookie = `token=${token}; path=/; max-age=31536000`; // bull dashboardの認証とかで使う
+	syncQueueTokenCookie(token);
 	await addAccount(me.id, token);
 
 	if (redirect) {
