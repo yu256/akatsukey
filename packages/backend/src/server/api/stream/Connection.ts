@@ -211,9 +211,8 @@ export default class Connection {
 				if (this.user == null) {
 					return;
 				}
-				if (data.body.replyUserId === this.user.id || data.body.mentions.includes(this.user.id)) {
-					// 自分へのreply/mentionはfollowers公開でも閲覧可能
-				} else if (!Object.hasOwn(this.following, data.body.userId)) {
+				const isReplyOrMention = data.body.replyUserId === this.user.id || data.body.mentions.includes(this.user.id);
+				if (!isReplyOrMention && !Object.hasOwn(this.following, data.body.userId)) {
 					return;
 				}
 			}
