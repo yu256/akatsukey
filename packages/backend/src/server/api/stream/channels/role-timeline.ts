@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
@@ -20,6 +21,7 @@ class RoleTimelineChannel extends Channel {
 
 	constructor(
 		private noteEntityService: NoteEntityService,
+		private noteStreamingHidingService: NoteStreamingHidingService,
 		private roleservice: RoleService,
 
 		id: string,
@@ -53,6 +55,9 @@ class RoleTimelineChannel extends Channel {
 
 			if (note.renote && !note.text && isUserRelated(note, this.userIdsWhoMeMutingRenotes)) return;
 
+			const { shouldSkip } = await this.noteStreamingHidingService.processHiding(note, this.user?.id ?? null);
+			if (shouldSkip) return;
+
 			this.send('note', note);
 		} else {
 			this.send(data.type, data.body);
@@ -74,6 +79,7 @@ export class RoleTimelineChannelService implements MiChannelService<false> {
 
 	constructor(
 		private noteEntityService: NoteEntityService,
+		private noteStreamingHidingService: NoteStreamingHidingService,
 		private roleservice: RoleService,
 	) {
 	}
@@ -82,6 +88,7 @@ export class RoleTimelineChannelService implements MiChannelService<false> {
 	public create(id: string, connection: Channel['connection']): RoleTimelineChannel {
 		return new RoleTimelineChannel(
 			this.noteEntityService,
+			this.noteStreamingHidingService,
 			this.roleservice,
 			id,
 			connection,
