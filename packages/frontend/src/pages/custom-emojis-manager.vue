@@ -85,6 +85,7 @@ import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
+import { iAmAdmin } from '@/account.js';
 
 const emojisPaginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
 
@@ -192,7 +193,7 @@ const menu = (ev: MouseEvent) => {
 					});
 				});
 		},
-	}, {
+	}, ...(iAmAdmin ? [{
 		icon: 'ti ti-upload',
 		text: i18n.ts.import,
 		action: async () => {
@@ -212,7 +213,7 @@ const menu = (ev: MouseEvent) => {
 					});
 				});
 		},
-	}], ev.currentTarget ?? ev.target);
+	}] : [])], ev.currentTarget ?? ev.target);
 };
 
 const setCategoryBulk = async () => {
