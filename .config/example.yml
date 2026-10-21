@@ -91,6 +91,22 @@ port: 3000
 # socket: /path/to/misskey.sock
 # chmodSocket: '777'
 
+# Reverse proxies whose forwarded client IP headers should be trusted.
+# By default only private, loopback, and IPv6 ULA ranges are trusted.
+# Set this explicitly if your reverse proxy connects from another range.
+#
+# Do not set this to true unless every direct connection to Misskey is
+# guaranteed to come through a trusted proxy. Otherwise clients can spoof
+# X-Forwarded-For and bypass IP-based controls.
+#
+#trustProxy:
+#  - '10.0.0.0/8'
+#  - '172.16.0.0/12'
+#  - '192.168.0.0/16'
+#  - '127.0.0.1/32'
+#  - '::1/128'
+#  - 'fc00::/7'
+
 #   ┌──────────────────────────┐
 #───┘ PostgreSQL configuration └────────────────────────────────
 
