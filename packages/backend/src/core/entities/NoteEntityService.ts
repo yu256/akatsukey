@@ -17,6 +17,7 @@ import { bindThis } from '@/decorators.js';
 import { isNotNull } from '@/misc/is-not-null.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
+import { CacheService } from '@/core/CacheService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
 import type { ReactionService } from '../ReactionService.js';
@@ -30,6 +31,7 @@ export class NoteEntityService implements OnModuleInit {
 	private customEmojiService: CustomEmojiService;
 	private reactionService: ReactionService;
 	private idService: IdService;
+	private cacheService: CacheService;
 	private noteLoader = new DebounceLoader(this.findNoteOrFail);
 
 	constructor(
@@ -60,6 +62,7 @@ export class NoteEntityService implements OnModuleInit {
 		//private driveFileEntityService: DriveFileEntityService,
 		//private customEmojiService: CustomEmojiService,
 		//private reactionService: ReactionService,
+		//private cacheService: CacheService,
 	) {
 	}
 
@@ -69,66 +72,58 @@ export class NoteEntityService implements OnModuleInit {
 		this.customEmojiService = this.moduleRef.get('CustomEmojiService');
 		this.reactionService = this.moduleRef.get('ReactionService');
 		this.idService = this.moduleRef.get('IdService');
+		this.cacheService = this.moduleRef.get('CacheService');
 	}
 
 	@bindThis
-	private async hideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null) {
-		// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
-		let hide = false;
+	public async shouldHideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null): Promise<boolean> {
+		if (meId === packedNote.userId) return false;
 
 		// visibility が specified かつ自分が指定されていなかったら非表示
 		if (packedNote.visibility === 'specified') {
 			if (meId == null) {
-				hide = true;
-			} else if (meId === packedNote.userId) {
-				hide = false;
-			} else {
-				// 指定されているかどうか
-				const specified = packedNote.visibleUserIds!.some((id: any) => meId === id);
+				return true;
+			}
 
-				if (specified) {
-					hide = false;
-				} else {
-					hide = true;
-				}
+			const specified = packedNote.visibleUserIds!.some(id => meId === id);
+			if (!specified) {
+				return true;
 			}
 		}
 
 		// visibility が followers かつ自分が投稿者のフォロワーでなかったら非表示
 		if (packedNote.visibility === 'followers') {
 			if (meId == null) {
-				hide = true;
-			} else if (meId === packedNote.userId) {
-				hide = false;
+				return true;
 			} else if (packedNote.reply && (meId === packedNote.reply.userId)) {
 				// 自分の投稿に対するリプライ
-				hide = false;
+				return false;
 			} else if (packedNote.mentions && packedNote.mentions.some(id => meId === id)) {
 				// 自分へのメンション
-				hide = false;
+				return false;
 			} else {
 				// フォロワーかどうか
-				const isFollowing = await this.followingsRepository.exists({
-					where: {
-						followeeId: packedNote.userId,
-						followerId: meId,
-					},
-				});
-
-				hide = !isFollowing;
+				const followings = await this.cacheService.userFollowingsCache.fetch(meId);
+				if (!Object.hasOwn(followings, packedNote.userId)) {
+					return true;
+				}
 			}
 		}
 
-		if (hide) {
-			packedNote.visibleUserIds = undefined;
-			packedNote.fileIds = [];
-			packedNote.files = [];
-			packedNote.text = null;
-			packedNote.poll = undefined;
-			packedNote.cw = null;
-			packedNote.isHidden = true;
-		}
+		return false;
 	}
+
+	@bindThis
+	public hideNote(packedNote: Packed<'Note'>): void {
+		packedNote.visibleUserIds = undefined;
+		packedNote.fileIds = [];
+		packedNote.files = [];
+		packedNote.text = null;
+		packedNote.poll = undefined;
+		packedNote.cw = null;
+		packedNote.isHidden = true;
+	}
+
 
 	@bindThis
 	private async populatePoll(note: MiNote, meId: MiUser['id'] | null) {
@@ -379,8 +374,8 @@ export class NoteEntityService implements OnModuleInit {
 			} : {}),
 		});
 
-		if (!opts.skipHide) {
-			await this.hideNote(packed, meId);
+		if (!opts.skipHide && await this.shouldHideNote(packed, meId)) {
+			this.hideNote(packed);
 		}
 
 		return packed;

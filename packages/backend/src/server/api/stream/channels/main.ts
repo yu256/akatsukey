@@ -46,6 +46,7 @@ class MainChannel extends Channel {
 				case 'mention': {
 					if (isInstanceMuted(data.body, new Set<string>(this.userProfile?.mutedInstances ?? []))) return;
 
+					if (!this.isNoteVisibleForMe(data.body)) return;
 					if (this.userIdsWhoMeMuting.has(data.body.userId)) return;
 					if (data.body.isHidden) {
 						const note = await this.noteEntityService.pack(data.body.id, this.user, {
