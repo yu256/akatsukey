@@ -122,7 +122,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 				userId,
 				dateTime: (new Date()).getTime(),
 			}), {
-				agent: this.httpRequestService.getAgentByUrl(new URL(subscription.endpoint)),
+				agent: this.httpRequestService.getAgentForHttps(new URL(subscription.endpoint)),
 			}).catch((err: any) => {
 				//swLogger.info(err.statusCode);
 				//swLogger.info(err.headers);
