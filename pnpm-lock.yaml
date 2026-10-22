@@ -26,8 +26,8 @@ importers:
         specifier: 6.0.4
         version: 6.0.4
       js-yaml:
-        specifier: 4.1.0
-        version: 4.1.0
+        specifier: 4.3.2
+        version: 4.3.2
       postcss:
         specifier: 8.4.33
         version: 8.4.33
@@ -243,8 +243,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       js-yaml:
-        specifier: 4.1.0
-        version: 4.1.0
+        specifier: 4.3.2
+        version: 4.3.2
       jsdom:
         specifier: 23.2.0
         version: 23.2.0(bufferutil@4.0.7)(utf-8-validate@6.0.3)
@@ -13317,8 +13317,8 @@ packages:
       esprima: 4.0.1
     dev: true
 
-  /js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  /js-yaml@4.3.2:
+    resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
     dependencies:
       argparse: 2.0.1
