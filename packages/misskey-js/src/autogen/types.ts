@@ -3655,7 +3655,6 @@ export type components = {
       injectFeaturedNote: boolean;
       receiveAnnouncementEmail: boolean;
       alwaysMarkNsfw: boolean;
-      autoSensitive: boolean;
       carefulBot: boolean;
       autoAcceptFollowed: boolean;
       noCrawle: boolean;
@@ -4746,10 +4745,6 @@ export type operations = {
             mcaptchaSecretKey: string | null;
             recaptchaSecretKey: string | null;
             turnstileSecretKey: string | null;
-            sensitiveMediaDetection: string;
-            sensitiveMediaDetectionSensitivity: string;
-            setSensitiveFlagAutomatically: boolean;
-            enableSensitiveMediaDetectionForVideos: boolean;
             /** Format: id */
             proxyAccountId: string | null;
             email: string | null;
@@ -8282,7 +8277,6 @@ export type operations = {
             noCrawle: boolean;
             preventAiLearning: boolean;
             alwaysMarkNsfw: boolean;
-            autoSensitive: boolean;
             carefulBot: boolean;
             injectFeaturedNote: boolean;
             receiveAnnouncementEmail: boolean;
@@ -8684,11 +8678,7 @@ export type operations = {
           turnstileSiteKey?: string | null;
           turnstileSecretKey?: string | null;
           /** @enum {string} */
-          sensitiveMediaDetection?: 'none' | 'all' | 'local' | 'remote';
           /** @enum {string} */
-          sensitiveMediaDetectionSensitivity?: 'medium' | 'low' | 'high' | 'veryLow' | 'veryHigh';
-          setSensitiveFlagAutomatically?: boolean;
-          enableSensitiveMediaDetectionForVideos?: boolean;
           /** Format: misskey:id */
           proxyAccountId?: string | null;
           maintainerName?: string | null;
@@ -18568,7 +18558,6 @@ export type operations = {
           injectFeaturedNote?: boolean;
           receiveAnnouncementEmail?: boolean;
           alwaysMarkNsfw?: boolean;
-          autoSensitive?: boolean;
           /** @enum {string} */
           followingVisibility?: 'public' | 'followers' | 'private';
           /** @enum {string} */
