@@ -28,6 +28,8 @@ export type Theme = {
 	};
 };
 
+const MAX_THEME_REFERENCE_DEPTH = 4;
+
 export const themeProps = Object.keys(lightTheme.props).filter(key => !key.startsWith('X'));
 
 export const getBuiltinThemes = () => Promise.all(
@@ -106,17 +108,40 @@ export function applyTheme(theme: Theme, persist = true) {
 	globalEvents.emit('themeChanged');
 }
 
-function compile(theme: Theme): Record<string, string> {
-	function getColor(val: string): tinycolor.Instance {
-		if (val[0] === '@') { // ref (prop)
-			return getColor(theme.props[val.substring(1)]);
-		} else if (val[0] === '$') { // ref (const)
-			return getColor(theme.props[val]);
-		} else if (val[0] === ':') { // func
-			const parts = val.split('<');
-			const func = parts.shift().substring(1);
-			const arg = parseFloat(parts.shift());
-			const color = getColor(parts.join('<'));
+function getThemeReferenceColor(theme: Theme, key: string, stack: string[], depth: number): tinycolor.Instance {
+	if (depth >= MAX_THEME_REFERENCE_DEPTH) {
+		throw new Error('Theme reference limit exceeded');
+	}
+	if (stack.includes(key)) {
+		throw new Error('Theme contains circular references');
+	}
+
+	const nextValue = theme.props[key];
+	if (typeof nextValue !== 'string') {
+		throw new Error(`Theme references missing property: ${key}`);
+	}
+
+	return getColor(theme, nextValue, [...stack, key], depth + 1);
+}
+
+function getColor(theme: Theme, val: string, stack: string[] = [], depth = 0): tinycolor.Instance {
+	if (depth >= MAX_THEME_REFERENCE_DEPTH) {
+		throw new Error('Theme reference limit exceeded');
+	}
+
+	if (val[0] === '@') {
+		return getThemeReferenceColor(theme, val.substring(1), stack, depth);
+	} else if (val[0] === '$') {
+		return getThemeReferenceColor(theme, val, stack, depth);
+	} else if (val[0] === ':') {
+		const parts = val.split('<');
+		const funcTxt = parts.shift();
+		const argTxt = parts.shift();
+
+		if (funcTxt && argTxt) {
+			const func = funcTxt.substring(1);
+			const arg = parseFloat(argTxt);
+			const color = getColor(theme, parts.join('<'), stack, depth + 1);
 
 			switch (func) {
 				case 'darken': return color.darken(arg);
@@ -126,20 +151,22 @@ function compile(theme: Theme): Record<string, string> {
 				case 'saturate': return color.saturate(arg);
 			}
 		}
-
-		// other case
-		return tinycolor(val);
 	}
 
-	const props = {};
+	return tinycolor(val);
+}
+
+function compile(theme: Theme): Record<string, string> {
+	const props: Record<string, string> = {};
 
 	for (const [k, v] of Object.entries(theme.props)) {
-		if (k.startsWith('$')) continue; // ignore const
-
-		props[k] = v.startsWith('"') ? v.replace(/^"\s*/, '') : genValue(getColor(v));
+		if (k.startsWith('$')) continue;
+		props[k] = v.startsWith('"') ? v.replace(/^"\s*/, '') : genValue(getColor(theme, v));
 	}
 
-	return props;
+	return Object.fromEntries(
+		Object.entries(props).filter(([key]) => themeProps.includes(key)),
+	);
 }
 
 function genValue(c: tinycolor.Instance): string {
