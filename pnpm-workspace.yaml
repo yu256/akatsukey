@@ -18,6 +18,12 @@ overrides:
   chokidar: 3.6.0
   fast-uri: 2.4.7
   lodash: 4.18.1
+  # Keep jsonld 8's canonicalization behavior while patching its HTTP client.
+  'undici@^5': 6.28.1
+  # ip-cidr's address API is compatible with the patched parser.
+  'ip-cidr>ip-address': 10.7.4
+  # summaly otherwise retains an older Fastify patch release.
+  '@misskey-dev/summaly>fastify': 5.12.7
 allowBuilds:
   '@swc/core': true
   bufferutil: true
