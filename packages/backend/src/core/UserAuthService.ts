@@ -52,7 +52,8 @@ export class UserAuthService {
 				throw new Error('authentication failed');
 			}
 
-			const currentStep = totp.counter({ timestamp: now });
+			// OTPAuth 9.x does not expose TOTP.counter(); derive the RFC 6238 time step directly.
+			const currentStep = Math.floor(now / 1000 / timeStep);
 			const step = currentStep + delta;
 			const usedTokenRedisKey = `2fa:used:${profile.userId}:${step}`;
 			const ttl = timeStep * (validationWindow * 2 + 1);
