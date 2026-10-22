@@ -251,4 +251,40 @@ export class QueryService {
 
 		q.setParameters(mutingQuery.getParameters());
 	}
+
+	/**
+	 * Restrict following-table rows according to the list owner's visibility.
+	 * Moderator bypass is handled by the caller.
+	 */
+	@bindThis
+	public generateFollowingRelationVisibilityQuery(q: SelectQueryBuilder<any>, list: 'followers' | 'following', me?: { id: MiUser['id'] } | null): void {
+		const alias = q.alias;
+		const ownerColumn = list === 'followers' ? `${alias}.followeeId` : `${alias}.followerId`;
+		const visibilityColumn = list === 'followers' ? 'ownerProfile.followersVisibility' : 'ownerProfile.followingVisibility';
+
+		q.innerJoin(this.userProfilesRepository.metadata.targetName, 'ownerProfile', `ownerProfile.userId = ${ownerColumn}`);
+
+		if (me == null) {
+			q.andWhere(`${visibilityColumn} = 'public'`);
+			return;
+		}
+
+		const meFollowingQuery = this.followingsRepository.createQueryBuilder('meFollowing')
+			.select('meFollowing.followeeId')
+			.where('meFollowing.followerId = :meId');
+
+		q.andWhere(new Brackets(qb => {
+			qb
+				.where(`${visibilityColumn} = 'public'`)
+				.orWhere(`${ownerColumn} = :meId`)
+				.orWhere(new Brackets(qb => {
+					qb
+						.where(`${visibilityColumn} = 'followers'`)
+						.andWhere(`${ownerColumn} IN (${meFollowingQuery.getQuery()})`);
+				}));
+		}));
+
+		q.setParameters({ meId: me.id });
+	}
+
 }
