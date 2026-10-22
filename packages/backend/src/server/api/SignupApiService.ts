@@ -227,17 +227,17 @@ export class SignupApiService {
 					username, password, host,
 				});
 
-				const res = await this.userEntityService.pack(account, account, {
-					schema: 'MeDetailed',
-					includeSecrets: true,
-				});
-
 				if (ticket) {
 					await this.registrationTicketsRepository.update(ticket.id, {
 						usedBy: account,
 						usedById: account.id,
 					});
 				}
+
+				const res = await this.userEntityService.pack(account, account, {
+					schema: 'MeDetailed',
+					includeSecrets: true,
+				});
 
 				return {
 					...res,
