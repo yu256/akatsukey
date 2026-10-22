@@ -99,9 +99,9 @@ export class Storage<T extends StateDef> {
 	private async init(): Promise<void> {
 		await this.migrate();
 
-		const deviceState: State<T> = await get(this.deviceStateKeyName) || {};
-		const deviceAccountState = $i ? await get(this.deviceAccountStateKeyName) || {} : {};
-		const registryCache = $i ? await get(this.registryCacheKeyName) || {} : {};
+		const deviceState = await this.readState(this.deviceStateKeyName);
+		const deviceAccountState: Partial<State<T>> = $i ? await this.readState(this.deviceAccountStateKeyName) : {};
+		const registryCache: Partial<State<T>> = $i ? await this.readState(this.registryCacheKeyName) : {};
 
 		for (const [k, v] of Object.entries(this.def) as [keyof T, T[keyof T]['default']][]) {
 			if (v.where === 'device' && Object.prototype.hasOwnProperty.call(deviceState, k)) {
@@ -117,6 +117,7 @@ export class Storage<T extends StateDef> {
 		}
 
 		this.pizzaxChannel.addEventListener('message', ({ where, key, value, userId }) => {
+			if (!Object.hasOwn(this.def, key)) return;
 			// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
 			// まずないと思うけど一応弾いておく
 			if (where === 'deviceAccount' && !($i && userId !== $i.id)) return;
@@ -128,6 +129,7 @@ export class Storage<T extends StateDef> {
 
 			// streamingのuser storage updateイベントを監視して更新
 			connection.on('registryUpdated', ({ scope, key, value }: { scope?: string[], key: keyof T, value: T[typeof key]['default'] }) => {
+				if (!Object.hasOwn(this.def, key)) return;
 				if (!scope || scope.length !== 2 || scope[0] !== 'client' || scope[1] !== this.key || this.state[key] === value) return;
 
 				this.reactiveState[key].value = this.state[key] = value;
@@ -141,6 +143,20 @@ export class Storage<T extends StateDef> {
 				});
 			});
 		}
+	}
+
+	private async readState(key: string): Promise<Partial<State<T>>> {
+		const state = await get(key) || {};
+		let changed = false;
+		for (const name of Object.keys(state)) {
+			if (!Object.hasOwn(this.def, name)) {
+				delete state[name];
+				changed = true;
+			}
+		}
+		// Erase credentials and settings left behind by removed features.
+		if (changed) await set(key, state);
+		return state;
 	}
 
 	private load(): Promise<void> {

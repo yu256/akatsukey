@@ -168,10 +168,4 @@ export const navbarItemDef = reactive({
 			clearCache();
 		},
 	},
-	vrchat: {
-		title: 'VRChat',
-		icon: 'ti ti-badge-vr',
-		show: computed(() => $i != null),
-		to: '/vrchat',
-	},
 });

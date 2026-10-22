@@ -11,8 +11,8 @@ import MkWidgets from '@/components/MkWidgets.vue';
 describe('saved widget layouts', () => {
 	afterEach(cleanup);
 
-	test('renders normal widgets while ignoring retired script widgets', () => {
-		const widgets = ['memo', 'aiscript', 'aiscriptApp', 'button'].map((name, index) => ({
+	test('renders normal widgets while ignoring retired widgets', () => {
+		const widgets = ['memo', 'aiscript', 'aiscriptApp', 'button', 'vrcUserList', 'vrcProfile'].map((name, index) => ({
 			id: String(index), name, data: { script: 'should never run' },
 		}));
 		const { container, getByTestId } = render(MkWidgets, {
@@ -23,8 +23,8 @@ describe('saved widget layouts', () => {
 		});
 
 		expect(getByTestId('memo')).toBeTruthy();
-		expect(container.querySelectorAll('widget-aiscript, widget-aiscript-app, widget-aiscriptApp, widget-button')).toHaveLength(0);
+		expect(container.firstElementChild?.children).toHaveLength(1);
 		expect(container.textContent).not.toContain('should never run');
-		expect(widgets).toHaveLength(4);
+		expect(widgets).toHaveLength(6);
 	});
 });
