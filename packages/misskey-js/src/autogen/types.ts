@@ -23815,6 +23815,8 @@ export type operations = {
       content: {
         'application/json': {
           endpoint: string;
+          auth: string;
+          publickey: string;
         };
       };
     };
