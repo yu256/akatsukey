@@ -294,6 +294,20 @@ export class HttpRequestService {
 	}
 
 	@bindThis
+	public getAgentForHttp(url: URL): http.Agent {
+		return (this.config.proxyBypassHosts ?? []).includes(url.hostname)
+			? this.http
+			: this.httpAgent;
+	}
+
+	@bindThis
+	public getAgentForHttps(url: URL): https.Agent {
+		return (this.config.proxyBypassHosts ?? []).includes(url.hostname)
+			? this.https
+			: this.httpsAgent;
+	}
+
+	@bindThis
 	public async getActivityJson(url: string): Promise<IObject> {
 		const res = await this.send(url, {
 			method: 'GET',
