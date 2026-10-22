@@ -7105,10 +7105,6 @@ packages:
     resolution: {integrity: sha512-n7fUU6W4kSYK8VQlf/LsE9kddBHPKhODoVOjsZswmve+2qLwBy6naWxs/EiuSZN9NU0N06Ra01FR+j87C62T0A==}
     dev: true
 
-  /@types/jsrsasign@10.5.12:
-    resolution: {integrity: sha512-sOA+eVnHU+FziThpMhuqs/tjFKe5gHVJKIS7g1BzhXP+e2FS8OvtzM0K3IzFxVksDOr98Gz5FJiZVxZ9uFoHhw==}
-    dev: true
-
   /@types/katex@0.16.0:
     resolution: {integrity: sha512-hz+S3nV6Mym5xPbT9fnO8dDhBFQguMYpY0Ipxv06JMi1ORgnEM4M1ymWDUhUNer3ElLmT583opRo4RzxKmh9jw==}
     dev: true
@@ -7202,12 +7198,6 @@ packages:
     resolution: {integrity: sha512-HhmzZh5LSJNS5O8jQKpJ/3ZcrrlG6L70hpGqMIAoM9YVD0YBRNWYsfwcXq8VnSjlNpCpgLzMXdiPo+dxcvSmiA==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
-
-  /@types/nodemailer@6.4.14:
-    resolution: {integrity: sha512-fUWthHO9k9DSdPCSPRqcu6TWhYyxTBg382vlNIttSe9M7XfsT06y0f24KHXtbnijPGGRIcVvdKHTNikOI6qiHA==}
-    dependencies:
-      '@types/node': 20.11.17
     dev: true
 
   /@types/normalize-package-data@2.4.1:
@@ -13524,10 +13514,6 @@ packages:
       json-schema: 0.4.0
       verror: 1.10.0
     dev: true
-
-  /jsrsasign@11.0.0:
-    resolution: {integrity: sha512-BtRwVKS+5dsgPpAtzJcpo5OoWjSs1/zllSBG0+8o8/aV0Ki76m6iZwHnwnsqoTdhfFZDN1XIdcaZr5ZkP+H2gg==}
-    dev: false
 
   /jssha@3.3.1:
     resolution: {integrity: sha512-VCMZj12FCFMQYcFLPRm/0lOBbLi8uM2BhXPTqw3U4YAfs4AZfiApOoBLoN8cQE60Z50m1MYMTQVCfgF/KaCVhQ==}
