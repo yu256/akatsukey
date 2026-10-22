@@ -5,20 +5,20 @@
 
 import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
 import { describe, expect, jest, test } from '@jest/globals';
+import { Test } from '@nestjs/testing';
 import cbor from 'cbor';
 import { isoCBOR } from '@simplewebauthn/server/helpers';
 import { WebAuthnService } from '@/core/WebAuthnService.js';
+import { MetaService } from '@/core/MetaService.js';
+import { DI } from '@/di-symbols.js';
 import type { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/server';
 import type { Config } from '@/config.js';
-import type { MetaService } from '@/core/MetaService.js';
-import type { UserSecurityKeysRepository } from '@/models/_.js';
-import type { Redis } from 'ioredis';
 
 const userId = '9x12345678';
 const origin = 'https://misskey.example:8443';
 const rpID = 'misskey.example';
 
-function fixture(legacy = false) {
+async function fixture(legacy = false) {
 	const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 	const jwk = publicKey.export({ format: 'jwk' });
 	const x = Buffer.from(jwk.x!, 'base64url');
@@ -47,12 +47,16 @@ function fixture(legacy = false) {
 		async findOneBy() { return key; },
 		async update(_where: unknown, changes: Partial<typeof key>) { Object.assign(key, changes); },
 	};
-	const service = new WebAuthnService(
-		redis as unknown as Redis,
-		{ url: origin, host: 'misskey.example:8443', hostname: rpID } as Config,
-		repository as unknown as UserSecurityKeysRepository,
-		{ async fetch() { return { name: 'Misskey' }; } } as unknown as MetaService,
-	);
+	const app = await Test.createTestingModule({
+		providers: [
+			WebAuthnService,
+			{ provide: DI.redis, useValue: redis },
+			{ provide: DI.config, useValue: { url: origin, host: 'misskey.example:8443', hostname: rpID } as Config },
+			{ provide: DI.userSecurityKeysRepository, useValue: repository },
+			{ provide: MetaService, useValue: { async fetch() { return { name: 'Misskey' }; } } },
+		],
+	}).compile();
+	const service = app.get(WebAuthnService);
 	const rpHash = createHash('sha256').update(rpID).digest();
 
 	function registration(challenge: string): RegistrationResponseJSON {
@@ -97,7 +101,7 @@ function fixture(legacy = false) {
 
 describe('WebAuthnService', () => {
 	test('registers a credential and authenticates with the persisted base64url key', async () => {
-		const { service, key, cose, registration, authentication } = fixture();
+		const { service, key, cose, registration, authentication } = await fixture();
 		const options = await service.initiateRegistration(userId, 'alice');
 		expect(options.rp.id).toBe(rpID);
 		expect(Buffer.from(options.user.id, 'base64url').toString()).toBe(userId);
@@ -116,7 +120,7 @@ describe('WebAuthnService', () => {
 	});
 
 	test('authenticates and migrates a legacy uncompressed EC key', async () => {
-		const { service, key, cose, authentication } = fixture(true);
+		const { service, key, cose, authentication } = await fixture(true);
 		const request = await service.initiateAuthentication(userId);
 		await expect(service.verifyAuthentication(userId, authentication(request.challenge))).resolves.toBe(true);
 		expect(key.publicKey).toBe(Buffer.from(cose).toString('base64url'));
@@ -124,7 +128,7 @@ describe('WebAuthnService', () => {
 	});
 
 	test('rejects a valid signature for another origin without updating the counter', async () => {
-		const { service, key, authentication } = fixture();
+		const { service, key, authentication } = await fixture();
 		const request = await service.initiateAuthentication(userId);
 		const error = jest.spyOn(console, 'error').mockImplementation(() => {});
 		try {
