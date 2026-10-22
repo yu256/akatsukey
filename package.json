@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://github.com/yu256/akatsukey"
 	},
-	"packageManager": "pnpm@8.15.1",
+	"packageManager": "pnpm@12.14.0",
 	"workspaces": [
 		"packages/frontend",
 		"packages/backend",
@@ -42,11 +42,6 @@
 		"clean": "node ./scripts/clean.js",
 		"clean-all": "node ./scripts/clean-all.js",
 		"cleanall": "pnpm clean-all"
-	},
-	"resolutions": {
-		"chokidar": "3.5.3",
-		"lodash": "4.17.21",
-		"fast-uri": "2.4.8"
 	},
 	"dependencies": {
 		"cssnano": "6.0.3",

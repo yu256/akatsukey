@@ -6,3 +6,22 @@ packages:
  - 'packages/misskey-js/generator'
  - 'packages/misskey-reversi'
  - 'packages/misskey-bubble-game'
+engineStrict: true
+overrides:
+  '@aiscript-dev/aiscript-languageserver': '-'
+  chokidar: 3.5.3
+  fast-uri: 2.4.8
+  lodash: 4.17.21
+allowBuilds:
+  '@swc/core': true
+  bufferutil: true
+  cbor-extract: true
+  cypress: true
+  esbuild: true
+  msgpackr-extract: true
+  re2: true
+  utf-8-validate: true
+  v-code-diff: true
+  vue-demi: true
+  '@nestjs/core': false
+  msw: false

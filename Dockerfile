@@ -29,8 +29,9 @@ COPY --link ["packages/misskey-bubble-game/package.json", "./packages/misskey-bu
 
 ARG NODE_ENV=production
 
+# pnpm no longer skips devDependencies based on NODE_ENV, so request it explicitly.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
-	pnpm i --frozen-lockfile --aggregate-output
+	pnpm i --frozen-lockfile --aggregate-output $([ "$NODE_ENV" = production ] && echo --prod)
 
 COPY --link . ./
 
@@ -59,8 +60,9 @@ COPY --link ["packages/misskey-bubble-game/package.json", "./packages/misskey-bu
 
 ARG NODE_ENV=production
 
+# pnpm no longer skips devDependencies based on NODE_ENV, so request it explicitly.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
-	pnpm i --frozen-lockfile --aggregate-output
+	pnpm i --frozen-lockfile --aggregate-output $([ "$NODE_ENV" = production ] && echo --prod)
 
 FROM --platform=$TARGETPLATFORM node:${NODE_VERSION}-slim AS runner
 
