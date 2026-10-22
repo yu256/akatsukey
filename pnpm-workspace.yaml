@@ -7,10 +7,16 @@ packages:
  - 'packages/misskey-reversi'
  - 'packages/misskey-bubble-game'
 engineStrict: true
+# Do not resolve versions published less than 7 days ago (supply-chain attack mitigation).
+minimumReleaseAge: 10080
+# Only for releases that have no 7-day-old alternative.
+minimumReleaseAgeExclude:
+  # The only release that supports sharp 0.35.
+  - '@misskey-dev/sharp-read-bmp@2.0.0'
 overrides:
   '@aiscript-dev/aiscript-languageserver': '-'
   chokidar: 3.5.3
-  fast-uri: 2.4.8
+  fast-uri: 2.4.7
   lodash: 4.17.21
 allowBuilds:
   '@swc/core': true
