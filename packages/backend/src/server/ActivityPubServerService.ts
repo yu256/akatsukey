@@ -534,6 +534,11 @@ export class ActivityPubServerService {
 		};
 
 		fastify.register(fastifyAccepts);
+
+		// HTTP signatures and Digest validation depend on the exact request bytes.
+		// Keep only buffer parsers for ActivityPub media types so Fastify cannot
+		// consume request.raw through a string parser before fastify-raw-body sees it.
+		fastify.removeAllContentTypeParsers();
 		fastify.addContentTypeParser('application/activity+json', { parseAs: 'buffer' }, almostDefaultJsonParser);
 		fastify.addContentTypeParser('application/ld+json', { parseAs: 'buffer' }, almostDefaultJsonParser);
 
