@@ -14,6 +14,7 @@ import type { MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js'
 import { MetaService } from '@/core/MetaService.js';
 import { bindThis } from '@/decorators.js';
 import { RedisKVCache } from '@/misc/cache.js';
+import { HttpRequestService } from '@/core/HttpRequestService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -61,6 +62,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
 
 		private metaService: MetaService,
+		private httpRequestService: HttpRequestService,
 	) {
 		this.subscriptionsCache = new RedisKVCache<MiSwSubscription[]>(this.redisClient, 'userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
@@ -69,6 +71,21 @@ export class PushNotificationService implements OnApplicationShutdown {
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),
 		});
+	}
+
+	@bindThis
+	public isValidEndpoint(endpoint: string): boolean {
+		let url: URL;
+		try {
+			url = new URL(endpoint);
+		} catch {
+			return false;
+		}
+
+		if (url.protocol !== 'https:') return false;
+		if (url.username !== '' || url.password !== '') return false;
+
+		return true;
 	}
 
 	@bindThis
@@ -85,6 +102,8 @@ export class PushNotificationService implements OnApplicationShutdown {
 		const subscriptions = await this.subscriptionsCache.fetch(userId);
 
 		for (const subscription of subscriptions) {
+			if (!this.isValidEndpoint(subscription.endpoint)) continue;
+
 			if ([
 				'readAllNotifications',
 			].includes(type) && !subscription.sendReadMessage) continue;
@@ -103,7 +122,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 				userId,
 				dateTime: (new Date()).getTime(),
 			}), {
-				proxy: this.config.proxy,
+				agent: this.httpRequestService.getAgentByUrl(new URL(subscription.endpoint)),
 			}).catch((err: any) => {
 				//swLogger.info(err.statusCode);
 				//swLogger.info(err.headers);
