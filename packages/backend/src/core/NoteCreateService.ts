@@ -841,7 +841,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 				where: {
 					followeeId: note.channelId,
 				},
-				select: ['followerId'],
+				select: { followerId: true },
 			});
 
 			for (const channelFollowing of channelFollowings) {
@@ -860,13 +860,13 @@ export class NoteCreateService implements OnApplicationShutdown {
 						followerHost: IsNull(),
 						isFollowerHibernated: false,
 					},
-					select: ['followerId', 'withReplies'],
+					select: { followerId: true, withReplies: true },
 				}),
 				this.userListMembershipsRepository.find({
 					where: {
 						userId: user.id,
 					},
-					select: ['userListId', 'userListUserId', 'withReplies'],
+					select: { userListId: true, userListUserId: true, withReplies: true },
 				}),
 			]);
 
@@ -971,7 +971,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 				id: In(samples.map(x => x.followerId)),
 				lastActiveDate: LessThan(new Date(Date.now() - (1000 * 60 * 60 * 24 * 50))),
 			},
-			select: ['id'],
+			select: { id: true },
 		});
 
 		if (hibernatedUsers.length > 0) {

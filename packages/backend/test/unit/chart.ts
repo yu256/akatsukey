@@ -49,6 +49,10 @@ describe('Chart', () => {
 				statement_timeout: 1000 * 10,
 				...config.db.extra,
 			},
+			invalidWhereValuesBehavior: {
+				null: 'ignore',
+				undefined: 'ignore',
+			},
 			synchronize: true,
 			dropSchema: true,
 			maxQueryExecutionTime: 300,

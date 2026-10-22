@@ -211,6 +211,11 @@ export function createPostgresDataSource(config: Config) {
 			statement_timeout: 1000 * 10,
 			...config.db.extra,
 		},
+		// Keep the 0.3 behavior of skipping null/undefined values in where conditions.
+		invalidWhereValuesBehavior: {
+			null: 'ignore',
+			undefined: 'ignore',
+		},
 		...(config.dbReplications ? {
 			replication: {
 				master: {

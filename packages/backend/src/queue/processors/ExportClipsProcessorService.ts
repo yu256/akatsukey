@@ -141,7 +141,7 @@ export class ExportClipsProcessorService {
 				order: {
 					id: 1,
 				},
-				relations: ['note', 'note.user'],
+				relations: { note: { user: true } },
 			}) as (MiClipNote & { note: MiNote & { user: MiUser } })[];
 
 			if (clipNotes.length === 0) {

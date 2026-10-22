@@ -68,7 +68,7 @@ class UserListChannel extends Channel {
 			where: {
 				userListId: this.listId,
 			},
-			select: ['userId'],
+			select: { userId: true },
 		});
 
 		const membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
