@@ -6,6 +6,10 @@
 import { Injectable } from '@nestjs/common';
 import sharp from 'sharp';
 
+// sharp < 0.35.4 bundles vulnerable libheif. Until the dependency is upgraded,
+// reject all HEIF/HEIC/AVIF input while keeping AVIF output available.
+sharp.block({ operation: ['VipsForeignLoadHeif'] });
+
 export type IImage = {
 	data: Buffer;
 	ext: string | null;
