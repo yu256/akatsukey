@@ -39,7 +39,7 @@
 		"@misskey-dev/eslint-plugin": "1.0.0",
 		"@swc/jest": "0.2.39",
 		"@types/jest": "30.0.0",
-		"@types/node": "20.19.43",
+		"@types/node": "24.19.2",
 		"@typescript-eslint/eslint-plugin": "6.21.0",
 		"@typescript-eslint/parser": "6.21.0",
 		"eslint": "8.56.0",
@@ -58,8 +58,6 @@
 		"built/dts"
 	],
 	"dependencies": {
-		"@swc/cli": "0.1.65",
-		"@swc/core": "1.16.18",
 		"eventemitter3": "5.0.4",
 		"reconnecting-websocket": "4.4.0"
 	}

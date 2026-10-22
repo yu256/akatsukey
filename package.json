@@ -50,7 +50,7 @@
 		"ignore-walk": "6.0.5",
 		"js-yaml": "4.3.2",
 		"postcss": "8.5.30",
-		"tar": "6.2.0",
+		"tar": "7.5.22",
 		"terser": "5.51.2",
 		"typescript": "5.9.3"
 	},

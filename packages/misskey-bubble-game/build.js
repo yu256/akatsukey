@@ -1,4 +1,4 @@
-import { build } from "esbuild";
+import { build, context } from "esbuild";
 import { globSync } from "glob";
 
 const entryPoints = globSync("./src/**/**.{ts,tsx}");
@@ -13,19 +13,16 @@ const options = {
   format: "esm",
 };
 
-if (process.env.WATCH === "true") {
-  options.watch = {
-    onRebuild(error, result) {
-      if (error) {
-        console.error("watch build failed:", error);
-      } else {
-        console.log("watch build succeeded:", result);
-      }
-    },
-  };
+async function run() {
+  if (process.env.WATCH === "true") {
+    const watcher = await context(options);
+    await watcher.watch();
+  } else {
+    await build(options);
+  }
 }
 
-build(options).catch((err) => {
-  process.stderr.write(err.stderr);
-  process.exit(1);
+run().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
 });
