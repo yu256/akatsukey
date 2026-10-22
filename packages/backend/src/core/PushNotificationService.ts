@@ -141,6 +141,11 @@ export class PushNotificationService implements OnApplicationShutdown {
 	}
 
 	@bindThis
+	public async refreshCache(userId: string): Promise<void> {
+		await this.subscriptionsCache.refresh(userId);
+	}
+
+	@bindThis
 	public dispose(): void {
 		this.subscriptionsCache.dispose();
 	}
