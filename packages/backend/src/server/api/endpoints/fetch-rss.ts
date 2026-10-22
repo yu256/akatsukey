@@ -8,8 +8,6 @@ import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 
-const rssParser = new Parser();
-
 export const meta = {
 	tags: ['meta'],
 
@@ -55,11 +53,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					Accept: 'application/rss+xml, */*',
 				},
 				timeout: 5000,
+				size: 1024 * 1024,
 			});
 
 			const text = await res.text();
+			const rssParser = new Parser({
+				xml2js: {
+					async: true,
+				},
+			});
+			const feed = await rssParser.parseString(text);
 
-			return rssParser.parseString(text);
+			feed.items = feed.items.filter(item => {
+				if (!item.link) return false;
+				try {
+					const url = new URL(item.link);
+					return url.protocol === 'http:' || url.protocol === 'https:';
+				} catch {
+					return false;
+				}
+			});
+
+			return feed;
 		});
 	}
 }
