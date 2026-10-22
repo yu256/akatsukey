@@ -4,12 +4,12 @@ import darkPlus from 'shiki/themes/dark-plus.mjs';
 import { unique } from './array.js';
 import { deepClone } from './clone.js';
 import { deepMerge } from './merge.js';
-import type { Highlighter, LanguageRegistration, ThemeRegistration, ThemeRegistrationRaw } from 'shiki';
+import type { HighlighterCore, LanguageRegistration, ThemeRegistration, ThemeRegistrationRaw } from 'shiki';
 import { ColdDeviceStorage } from '@/store.js';
 import lightTheme from '@/themes/_light.json5';
 import darkTheme from '@/themes/_dark.json5';
 
-let _highlighter: Highlighter | null = null;
+let _highlighter: HighlighterCore | null = null;
 
 export async function getTheme(mode: 'light' | 'dark', getName: true): Promise<string>;
 export async function getTheme(mode: 'light' | 'dark', getName?: false): Promise<ThemeRegistration | ThemeRegistrationRaw>;
@@ -46,7 +46,7 @@ export async function getTheme(mode: 'light' | 'dark', getName = false): Promise
 	return darkPlus;
 }
 
-export async function getHighlighter(): Promise<Highlighter> {
+export async function getHighlighter(): Promise<HighlighterCore> {
 	if (!_highlighter) {
 		return await initHighlighter();
 	}

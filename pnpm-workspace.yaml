@@ -30,4 +30,6 @@ allowBuilds:
   v-code-diff: true
   vue-demi: true
   '@nestjs/core': false
+  '@parcel/watcher': false
+  unrs-resolver: false
   msw: false

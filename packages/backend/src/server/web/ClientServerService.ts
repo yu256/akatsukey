@@ -195,6 +195,8 @@ export class ClientServerService {
 
 		// Authenticate
 		fastify.addHook('onRequest', async (request, reply) => {
+			// Requests that matched no route do not reach the dashboard.
+			if (request.routeOptions.url == null) return;
 			// %71ueueとかでリクエストされたら困るため
 			const url = decodeURI(request.routeOptions.url);
 			if (url === bullBoardPath || url.startsWith(bullBoardPath + '/')) {
