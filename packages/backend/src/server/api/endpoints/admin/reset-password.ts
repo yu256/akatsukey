@@ -6,10 +6,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { Endpoint } from '@/server/api/endpoint-base.js';
+import { ApiError } from '@/server/api/error.js';
 import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -17,6 +19,14 @@ export const meta = {
 	requireCredential: true,
 	requireModerator: true,
 	kind: 'write:admin:reset-password',
+
+	errors: {
+		accessDenied: {
+			message: 'Access denied.',
+			code: 'ACCESS_DENIED',
+			id: 'cda8f8ce-89a6-4f92-8055-33bbe0c1464d',
+		},
+	},
 
 	res: {
 		type: 'object',
@@ -49,6 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
+		private roleService: RoleService,
 		private moderationLogService: ModerationLogService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
@@ -58,8 +69,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('user not found');
 			}
 
-			if (user.isRoot) {
-				throw new Error('cannot reset password of root');
+			if (await this.roleService.isAdministrator(user) && me.id !== user.id) {
+				throw new ApiError(meta.errors.accessDenied);
 			}
 
 			const passwd = secureRndstr(8);
