@@ -8,7 +8,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import { createBullBoard } from '@bull-board/api';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter.js';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FastifyAdapter } from '@bull-board/fastify';
 import ms from 'ms';
 import sharp from 'sharp';
@@ -16,7 +16,7 @@ import pug from 'pug';
 import { In, IsNull } from 'typeorm';
 import fastifyStatic from '@fastify/static';
 import fastifyView from '@fastify/view';
-import fastifyCookie from '@fastify/cookie';
+import { fastifyCookie } from '@fastify/cookie';
 import fastifyProxy from '@fastify/http-proxy';
 import vary from 'vary';
 import type { Config } from '@/config.js';
@@ -779,7 +779,7 @@ export class ClientServerService {
 			return await renderBase(reply);
 		});
 
-		fastify.setErrorHandler(async (error, request, reply) => {
+		fastify.setErrorHandler<{ code?: string } & Error>(async (error, request, reply) => {
 			const errId = randomUUID();
 			this.clientLoggerService.logger.error(`Internal error occurred in ${request.routeOptions.url}: ${error.message}`, {
 				path: request.routeOptions.url,

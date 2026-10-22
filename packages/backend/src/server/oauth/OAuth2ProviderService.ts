@@ -91,21 +91,6 @@ function validateClientId(raw: string): URL {
 	return url;
 }
 
-function normalizeUrlForExpressMiddleware(fastify: FastifyInstance): void {
-	fastify.addHook('onRequest', async (request, reply) => {
-		if (request.raw.url == null) return;
-
-		try {
-			// @fastify/express <= 4.0.2 matched middleware against the encoded URL,
-			// while Fastify routes match the decoded URL. Keep both views identical.
-			request.raw.url = decodeURI(request.raw.url);
-		} catch {
-			reply.code(400);
-			reply.send();
-		}
-	});
-}
-
 interface ClientInformation {
 	id: string;
 	redirectUris: string[];
@@ -408,7 +393,6 @@ export class OAuth2ProviderService {
 			},
 		});
 
-		normalizeUrlForExpressMiddleware(fastify);
 		await fastify.register(fastifyExpress);
 		fastify.use('/authorize', this.#server.authorize(((areq, done) => {
 			(async (): Promise<Parameters<typeof done>> => {
@@ -499,7 +483,6 @@ export class OAuth2ProviderService {
 		fastify.register(fastifyCors);
 		fastify.post('', async () => { });
 
-		normalizeUrlForExpressMiddleware(fastify);
 		await fastify.register(fastifyExpress);
 		// Clients may use JSON or urlencoded
 		fastify.use('', bodyParser.urlencoded({ extended: false }));
