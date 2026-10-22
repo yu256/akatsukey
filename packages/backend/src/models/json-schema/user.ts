@@ -454,10 +454,6 @@ export const packedMeDetailedOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
-		autoSensitive: {
-			type: 'boolean',
-			nullable: false, optional: false,
-		},
 		carefulBot: {
 			type: 'boolean',
 			nullable: false, optional: false,
