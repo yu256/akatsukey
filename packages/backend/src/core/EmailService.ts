@@ -5,6 +5,7 @@
 
 import { URLSearchParams } from 'node:url';
 import * as nodemailer from 'nodemailer';
+import sanitizeHtml from 'sanitize-html';
 import { Inject, Injectable } from '@nestjs/common';
 import { validate as validateEmail } from 'deep-email-validator';
 import { MetaService } from '@/core/MetaService.js';
@@ -16,6 +17,15 @@ import type { UserProfilesRepository } from '@/models/_.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
+
+function escapeHtml(value: string): string {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;');
+}
 
 @Injectable()
 export class EmailService {
@@ -46,6 +56,7 @@ export class EmailService {
 		const emailSettingUrl = `${this.config.url}/settings/email`;
 
 		const enableAuth = meta.smtpUser != null && meta.smtpUser !== '';
+		const sanitizedHtml = sanitizeHtml(html);
 
 		const transporter = nodemailer.createTransport({
 			host: meta.smtpHost,
@@ -60,7 +71,6 @@ export class EmailService {
 		} as any);
 
 		try {
-			// TODO: htmlサニタイズ
 			const info = await transporter.sendMail({
 				from: meta.email!,
 				to: to,
@@ -70,7 +80,7 @@ export class EmailService {
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>${ subject }</title>
+		<title>${ escapeHtml(subject) }</title>
 		<style>
 			html {
 				background: #eee;
@@ -131,18 +141,18 @@ export class EmailService {
 	<body>
 		<main>
 			<header>
-				<img src="${ meta.logoImageUrl ?? meta.iconUrl ?? iconUrl }"/>
+				<img src="${ escapeHtml(meta.logoImageUrl ?? meta.iconUrl ?? iconUrl) }"/>
 			</header>
 			<article>
-				<h1>${ subject }</h1>
-				<div>${ html }</div>
+				<h1>${ escapeHtml(subject) }</h1>
+				<div>${ sanitizedHtml }</div>
 			</article>
 			<footer>
-				<a href="${ emailSettingUrl }">${ 'Email setting' }</a>
+				<a href="${ escapeHtml(emailSettingUrl) }">${ 'Email setting' }</a>
 			</footer>
 		</main>
 		<nav>
-			<a href="${ this.config.url }">${ this.config.host }</a>
+			<a href="${ escapeHtml(this.config.url) }">${ escapeHtml(this.config.host) }</a>
 		</nav>
 	</body>
 </html>`,
