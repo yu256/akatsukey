@@ -32,7 +32,7 @@ import { MemoryKVCache } from '@/misc/cache.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import Logger from '@/logger.js';
 import { StatusError } from '@/misc/status-error.js';
-import type { ServerResponse } from 'node:http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { FastifyInstance } from 'fastify';
 
 // TODO: Consider migrating to @node-oauth/oauth2-server once
@@ -89,6 +89,12 @@ function validateClientId(raw: string): URL {
 	}
 
 	return url;
+}
+
+// oauth2orize expects an object even when body-parser did not match the request.
+function initializeBody(req: IncomingMessage & { body?: unknown }, _res: ServerResponse, next: () => void): void {
+	req.body ??= {};
+	next();
 }
 
 interface ClientInformation {
@@ -455,6 +461,7 @@ export class OAuth2ProviderService {
 		fastify.use('/authorize', this.#server.errorHandler());
 
 		fastify.use('/decision', bodyParser.urlencoded({ extended: false }));
+		fastify.use('/decision', initializeBody);
 		fastify.use('/decision', this.#server.decision((req, done) => {
 			const { body } = req as OAuth2DecisionRequest;
 			this.#logger.info(`Received the decision. Cancel: ${!!body.cancel}`);
@@ -487,6 +494,7 @@ export class OAuth2ProviderService {
 		// Clients may use JSON or urlencoded
 		fastify.use('', bodyParser.urlencoded({ extended: false }));
 		fastify.use('', bodyParser.json({ strict: true }));
+		fastify.use('', initializeBody);
 		fastify.use('', this.#server.token());
 		fastify.use('', this.#server.errorHandler());
 	}

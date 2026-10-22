@@ -76,6 +76,7 @@ export class FeedService {
 				id: In(note.fileIds),
 			}) : [];
 			const file = files.find(file => file.type.startsWith('image/'));
+			const imageUrl = file ? this.driveFileEntityService.getPublicUrl(file) : null;
 
 			feed.addItem({
 				title: `New note by ${author.name}`,
@@ -83,7 +84,7 @@ export class FeedService {
 				date: this.idService.parse(note.id).date,
 				description: note.cw ?? undefined,
 				content: note.text ?? undefined,
-				image: file ? this.driveFileEntityService.getPublicUrl(file) : undefined,
+				image: imageUrl != null && URL.canParse(imageUrl) ? imageUrl : undefined,
 			});
 		}
 

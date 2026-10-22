@@ -5,15 +5,15 @@
 
 import cluster from 'node:cluster';
 import chalk from 'chalk';
-import { default as convertColor } from 'color-convert';
+import convertColor from 'color-convert';
 import { format as dateFormat } from 'date-fns';
 import { bindThis } from '@/decorators.js';
 import { envOption } from './env.js';
-import type { KEYWORD } from 'color-convert/conversions.js';
+export type LoggerColor = 'blue' | 'cyan' | 'gray' | 'green' | 'magenta' | 'orange' | 'red' | 'white' | 'yellow';
 
 type Context = {
 	name: string;
-	color?: KEYWORD;
+	color?: LoggerColor;
 };
 
 type Level = 'error' | 'success' | 'warning' | 'debug' | 'info';
@@ -24,7 +24,7 @@ export default class Logger {
 	private parentLogger: Logger | null = null;
 	private store: boolean;
 
-	constructor(context: string, color?: KEYWORD, store = true) {
+	constructor(context: string, color?: LoggerColor, store = true) {
 		this.context = {
 			name: context,
 			color: color,
@@ -33,7 +33,7 @@ export default class Logger {
 	}
 
 	@bindThis
-	public createSubLogger(context: string, color?: KEYWORD, store = true): Logger {
+	public createSubLogger(context: string, color?: LoggerColor, store = true): Logger {
 		const logger = new Logger(context, color, store);
 		logger.parentLogger = this;
 		return logger;

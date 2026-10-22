@@ -47,16 +47,17 @@ const sideN = Math.floor(n / 2);
  */
 export function genIdenticon(seed: string, stream: WriteStream): Promise<void> {
 	const rand = gen.create(seed);
-	const canvas = p.make(size, size, undefined);
+	const canvas = p.make(size, size);
 	const ctx = canvas.getContext('2d');
 
 	const bgColors = colors[rand(colors.length)];
 
 	const bg = ctx.createLinearGradient(0, 0, size, size);
-	bg.addColorStop(0, bgColors[0]);
-	bg.addColorStop(1, bgColors[1]);
+	// pureimage parses CSS colors, but its addColorStop declaration incorrectly requires numbers.
+	bg.addColorStop(0, bgColors[0] as unknown as number);
+	bg.addColorStop(1, bgColors[1] as unknown as number);
 
-	ctx.fillStyle = bg as any;
+	ctx.fillStyle = bg;
 	ctx.beginPath();
 	ctx.fillRect(0, 0, size, size);
 

@@ -16,7 +16,7 @@ import { isUserRelated } from '@/misc/is-user-related.js';
 import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
-import type { Index, MeiliSearch } from 'meilisearch';
+import type { Index, Meilisearch } from 'meilisearch';
 
 type K = string;
 type V = string | number | boolean;
@@ -71,7 +71,7 @@ export class SearchService {
 		private config: Config,
 
 		@Inject(DI.meilisearch)
-		private meilisearch: MeiliSearch | null,
+		private meilisearch: Meilisearch | null,
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,

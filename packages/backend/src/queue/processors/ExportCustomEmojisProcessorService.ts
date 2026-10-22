@@ -8,7 +8,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import mime from 'mime-types';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, UsersRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -124,7 +124,7 @@ export class ExportCustomEmojisProcessorService {
 		await new Promise<void>(async (resolve) => {
 			const [archivePath, archiveCleanup] = await createTemp();
 			const archiveStream = fs.createWriteStream(archivePath);
-			const archive = archiver('zip', {
+			const archive = new ZipArchive({
 				zlib: { level: 0 },
 			});
 			archiveStream.on('close', async () => {
