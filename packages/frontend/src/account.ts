@@ -14,6 +14,7 @@ import { apiUrl } from '@/config.js';
 import { waiting, popup, popupMenu, success, alert } from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { unisonReload, reloadChannel } from '@/scripts/unison-reload.js';
+import { encodePushSubscriptionKey } from '@/scripts/encode-push-subscription-key.js';
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -68,8 +69,9 @@ export async function signout() {
 				await window.fetch(`${apiUrl}/sw/unregister`, {
 					method: 'POST',
 					body: JSON.stringify({
-						i: $i.token,
 						endpoint: push.endpoint,
+						auth: encodePushSubscriptionKey(push.getKey('auth')),
+						publickey: encodePushSubscriptionKey(push.getKey('p256dh')),
 					}),
 					headers: {
 						'Content-Type': 'application/json',
