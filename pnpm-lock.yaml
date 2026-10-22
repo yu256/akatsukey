@@ -163,7 +163,6 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@aiscript-dev/aiscript-languageserver': '-'
   chokidar: 3.6.0
   fast-uri: 2.4.7
   lodash: 4.18.1
@@ -431,9 +430,6 @@ importers:
       misskey-js:
         specifier: workspace:*
         version: link:../misskey-js
-      misskey-reversi:
-        specifier: workspace:*
-        version: link:../misskey-reversi
       ms:
         specifier: 3.0.0-canary.1
         version: 3.0.0-canary.1
@@ -820,9 +816,6 @@ importers:
       '@rollup/pluginutils':
         specifier: 5.4.0
         version: 5.4.0(rollup@4.64.7)
-      '@syuilo/aiscript':
-        specifier: 0.17.0
-        version: 0.17.0
       '@tabler/icons-webfont':
         specifier: 2.47.0
         version: 2.47.0
@@ -835,9 +828,6 @@ importers:
       '@vue/compiler-sfc':
         specifier: 3.5.44
         version: 3.5.44
-      aiscript-vscode:
-        specifier: github:aiscript-dev/aiscript-vscode#v0.1.2
-        version: https://codeload.github.com/aiscript-dev/aiscript-vscode/tar.gz/793211d40243c8775f6b85f015c221c82cbffb07
       astring:
         specifier: 1.9.0
         version: 1.9.0
@@ -907,15 +897,9 @@ importers:
       mfm-js:
         specifier: 0.24.0
         version: 0.24.0(patch_hash=9df56478eb359f37b2cef65642776a3becbebb10ab4aa84f2206c5d8ee0e052e)
-      misskey-bubble-game:
-        specifier: workspace:*
-        version: link:../misskey-bubble-game
       misskey-js:
         specifier: workspace:*
         version: link:../misskey-js
-      misskey-reversi:
-        specifier: workspace:*
-        version: link:../misskey-reversi
       photoswipe:
         specifier: 5.4.4
         version: 5.4.4
@@ -1158,52 +1142,6 @@ importers:
         specifier: 3.3.13
         version: 3.3.13(typescript@5.9.3)
 
-  packages/misskey-bubble-game:
-    dependencies:
-      esbuild:
-        specifier: 0.28.2
-        version: 0.28.2
-      eventemitter3:
-        specifier: 5.0.4
-        version: 5.0.4
-      glob:
-        specifier: 10.5.0
-        version: 10.5.0
-      matter-js:
-        specifier: 0.19.0
-        version: 0.19.0
-      seedrandom:
-        specifier: 3.0.5
-        version: 3.0.5
-    devDependencies:
-      '@misskey-dev/eslint-plugin':
-        specifier: 1.0.0
-        version: 1.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0))(eslint@8.56.0(supports-color@9.4.0))
-      '@types/matter-js':
-        specifier: 0.19.8
-        version: 0.19.8
-      '@types/node':
-        specifier: 24.19.2
-        version: 24.19.2
-      '@types/seedrandom':
-        specifier: 3.0.8
-        version: 3.0.8
-      '@typescript-eslint/eslint-plugin':
-        specifier: 6.21.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: 6.21.0
-        version: 6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
-      eslint:
-        specifier: 8.56.0
-        version: 8.56.0(supports-color@9.4.0)
-      nodemon:
-        specifier: 3.1.14
-        version: 3.1.14
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-
   packages/misskey-js:
     dependencies:
       eventemitter3:
@@ -1294,40 +1232,6 @@ importers:
       tsx:
         specifier: 4.23.15
         version: 4.23.15
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-
-  packages/misskey-reversi:
-    dependencies:
-      crc-32:
-        specifier: 1.2.2
-        version: 1.2.2
-      esbuild:
-        specifier: 0.28.2
-        version: 0.28.2
-      glob:
-        specifier: 10.5.0
-        version: 10.5.0
-    devDependencies:
-      '@misskey-dev/eslint-plugin':
-        specifier: 1.0.0
-        version: 1.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0))(eslint@8.56.0(supports-color@9.4.0))
-      '@types/node':
-        specifier: 24.19.2
-        version: 24.19.2
-      '@typescript-eslint/eslint-plugin':
-        specifier: 6.21.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3))(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: 6.21.0
-        version: 6.21.0(eslint@8.56.0(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.9.3)
-      eslint:
-        specifier: 8.56.0
-        version: 8.56.0(supports-color@9.4.0)
-      nodemon:
-        specifier: 3.1.14
-        version: 3.1.14
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -3806,9 +3710,6 @@ packages:
   '@swc/wasm@1.2.130':
     resolution: {integrity: sha512-rNcJsBxS70+pv8YUWwf5fRlWX6JoY/HJc25HD/F8m6Kv7XhJdqPPMhyX6TKkUBPAG7TWlZYoxa+rHAjPy4Cj3Q==}
 
-  '@syuilo/aiscript@0.17.0':
-    resolution: {integrity: sha512-3JtQ1rWJHMxQ3153zLCXMUOwrOgjPPYGBl0dPHhR0ohm4tn7okMQRugxMCT0t3YxByemb9FfiM6TUjd0tEGxdA==}
-
   '@tabler/icons-webfont@2.47.0':
     resolution: {integrity: sha512-yfV9zDal0iYDmyGz4BS9IlhaaMydtLdyOrY2UAZToP65sVWj7AFIi6symNzsoBaX867xAZWVHdKcocah0BfSog==}
 
@@ -4059,9 +3960,6 @@ packages:
 
   '@types/sanitize-html@2.16.2':
     resolution: {integrity: sha512-kuAbgDCFv418flrp3z4o/4ufLA/5ovmXRH0L419iZCPGO7w00znjeDI5Wy/KZWNIBpDQc7hucCK+J5almB6FyA==}
-
-  '@types/seedrandom@3.0.8':
-    resolution: {integrity: sha512-TY1eezMU2zH2ozQoAFAQFOPpvP15g+ZgSfTZt31AUUH/Rxtnz3H+A/Sv1Snw2/amp//omibc+AEkTaA8KUeOLQ==}
 
   '@types/semver@7.8.0':
     resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
@@ -4547,11 +4445,6 @@ packages:
   aggregate-error@5.1.0:
     resolution: {integrity: sha512-1m4/ydbOGBbHTtBYa4/ISQcqfPdZAxQLzj71wM71T8lP4ktez8lcsVolvscrujQW4CJr/LJSzoZ6mcfnqzYQ3A==}
     engines: {node: '>=18'}
-
-  aiscript-vscode@https://codeload.github.com/aiscript-dev/aiscript-vscode/tar.gz/793211d40243c8775f6b85f015c221c82cbffb07:
-    resolution: {gitHosted: true, integrity: sha512-kRyte6JZn1A028Q+Zk0XgA3SoIAcmXRx849yHlMN1flNzTO9YT03wahlKFWBkGwbTKHIQl156By/bvjGV5uYXw==, tarball: https://codeload.github.com/aiscript-dev/aiscript-vscode/tar.gz/793211d40243c8775f6b85f015c221c82cbffb07}
-    version: 0.1.2
-    engines: {vscode: ^1.83.0}
 
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -7550,10 +7443,6 @@ packages:
   minimatch@3.1.5:
     resolution: {integrity: sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==}
 
-  minimatch@5.1.9:
-    resolution: {integrity: sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw==}
-    engines: {node: '>=10'}
-
   minimatch@9.0.3:
     resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -8785,9 +8674,6 @@ packages:
   secure-json-parse@4.1.1:
     resolution: {integrity: sha512-lnd81MQEZKjhW/Gd2TQqdd4XP6QYNdDW/EP+I7nTrFHP9y2LmaGPIHk9xsnzcOiEr1c39c/e84xFgGviQKBTRw==}
 
-  seedrandom@3.0.5:
-    resolution: {integrity: sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==}
-
   seek-bzip@2.0.0:
     resolution: {integrity: sha512-SMguiTnYrhpLdk3PwfzHeotrcwi8bNV4iemL9tx9poR/yeaMYwB9VzR1w7b57DuWpuqR8n6oZboi0hj3AxZxQg==}
     hasBin: true
@@ -9901,20 +9787,6 @@ packages:
   void-elements@3.1.0:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
-
-  vscode-jsonrpc@8.2.0:
-    resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
-    engines: {node: '>=14.0.0'}
-
-  vscode-languageclient@9.0.1:
-    resolution: {integrity: sha512-JZiimVdvimEuHh5olxhxkht09m3JzUGwggb5eRUkzzJhZ2KjCN0nh55VfiED9oez9DyF8/fz1g1iBV3h+0Z2EA==}
-    engines: {vscode: ^1.82.0}
-
-  vscode-languageserver-protocol@3.17.5:
-    resolution: {integrity: sha512-mb1bvRJN8SVznADSGWM9u/b07H7Ecg0I3OgXDuLdn307rl/J3A9YD6/eYOssqhecL27hK1IPZAsaqh00i/Jljg==}
-
-  vscode-languageserver-types@3.17.5:
-    resolution: {integrity: sha512-Ld1VelNuX9pdF39h2Hgaeb5hEZM2Z3jUrrMgWQAu82jMtZp7p3vJT3BzToKtZI7NgQssZje5o0zryOrhQvzQAg==}
 
   vscode-uri@3.2.0:
     resolution: {integrity: sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==}
@@ -13009,12 +12881,6 @@ snapshots:
   '@swc/wasm@1.2.130':
     optional: true
 
-  '@syuilo/aiscript@0.17.0':
-    dependencies:
-      seedrandom: 3.0.5
-      stringz: 2.1.0
-      uuid: 9.0.1
-
   '@tabler/icons-webfont@2.47.0':
     dependencies:
       '@tabler/icons': 2.47.0
@@ -13310,8 +13176,6 @@ snapshots:
   '@types/sanitize-html@2.16.2':
     dependencies:
       htmlparser2: 12.0.0
-
-  '@types/seedrandom@3.0.8': {}
 
   '@types/semver@7.8.0': {}
 
@@ -14078,10 +13942,6 @@ snapshots:
     dependencies:
       clean-stack: 5.3.0
       indent-string: 5.0.0
-
-  aiscript-vscode@https://codeload.github.com/aiscript-dev/aiscript-vscode/tar.gz/793211d40243c8775f6b85f015c221c82cbffb07:
-    dependencies:
-      vscode-languageclient: 9.0.1
 
   ajv-draft-04@1.0.0(ajv@8.20.0):
     optionalDependencies:
@@ -18411,10 +18271,6 @@ snapshots:
     dependencies:
       brace-expansion: 1.1.21
 
-  minimatch@5.1.9:
-    dependencies:
-      brace-expansion: 2.1.7
-
   minimatch@9.0.3:
     dependencies:
       brace-expansion: 2.1.7
@@ -19742,8 +19598,6 @@ snapshots:
 
   secure-json-parse@4.1.1: {}
 
-  seedrandom@3.0.5: {}
-
   seek-bzip@2.0.0:
     dependencies:
       commander: 6.2.1
@@ -20863,21 +20717,6 @@ snapshots:
       - msw
 
   void-elements@3.1.0: {}
-
-  vscode-jsonrpc@8.2.0: {}
-
-  vscode-languageclient@9.0.1:
-    dependencies:
-      minimatch: 5.1.9
-      semver: 7.8.5
-      vscode-languageserver-protocol: 3.17.5
-
-  vscode-languageserver-protocol@3.17.5:
-    dependencies:
-      vscode-jsonrpc: 8.2.0
-      vscode-languageserver-types: 3.17.5
-
-  vscode-languageserver-types@3.17.5: {}
 
   vscode-uri@3.2.0: {}
 

@@ -29,12 +29,10 @@ type Keys =
 	'theme' |
 	'customCss' |
 	'message_drafts' |
-	'scratchpad' |
 	'debug' |
 	`miux:${string}` |
 	`ui:folder:${string}` |
 	`themes:${string}` |
-	`aiscript:${string}` |
 	'lastEmojisFetchedAt' | // DEPRECATED, stored in indexeddb (13.9.0~)
 	'emojis' | // DEPRECATED, stored in indexeddb (13.9.0~);
 	`channelLastReadedAt:${string}`

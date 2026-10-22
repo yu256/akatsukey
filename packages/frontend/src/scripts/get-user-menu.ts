@@ -11,7 +11,7 @@ import copyToClipboard from '@/scripts/copy-to-clipboard.js';
 import { host, url } from '@/config.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import { defaultStore, userActions } from '@/store.js';
+import { defaultStore } from '@/store.js';
 import { $i, iAmModerator } from '@/account.js';
 import { IRouter } from '@/nirax.js';
 import { antennasCache, rolesCache, userListsCache } from '@/cache.js';
@@ -370,16 +370,6 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: IRouter
 				router.push('/settings/profile');
 			},
 		}]);
-	}
-
-	if (userActions.length > 0) {
-		menu = menu.concat([{ type: 'divider' }, ...userActions.map(action => ({
-			icon: 'ti ti-plug',
-			text: action.title,
-			action: () => {
-				action.handler(user);
-			},
-		}))]);
 	}
 
 	const cleanup = () => {

@@ -4,8 +4,6 @@ packages:
  - 'packages/sw'
  - 'packages/misskey-js'
  - 'packages/misskey-js/generator'
- - 'packages/misskey-reversi'
- - 'packages/misskey-bubble-game'
 engineStrict: true
 # Do not resolve versions published less than 7 days ago (supply-chain attack mitigation).
 minimumReleaseAge: 10080
@@ -14,7 +12,6 @@ minimumReleaseAgeExclude:
   # The only release that supports sharp 0.35.
   - '@misskey-dev/sharp-read-bmp@2.0.0'
 overrides:
-  '@aiscript-dev/aiscript-languageserver': '-'
   chokidar: 3.6.0
   fast-uri: 2.4.7
   lodash: 4.18.1

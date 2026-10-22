@@ -438,19 +438,6 @@ import type {
 	PagesShowResponse,
 	PagesUnlikeRequest,
 	PagesUpdateRequest,
-	FlashCreateRequest,
-	FlashCreateResponse,
-	FlashDeleteRequest,
-	FlashFeaturedResponse,
-	FlashLikeRequest,
-	FlashShowRequest,
-	FlashShowResponse,
-	FlashUnlikeRequest,
-	FlashUpdateRequest,
-	FlashMyRequest,
-	FlashMyResponse,
-	FlashMyLikesRequest,
-	FlashMyLikesResponse,
 	PingResponse,
 	PinnedUsersResponse,
 	PromoReadRequest,
@@ -512,8 +499,6 @@ import type {
 	UsersNotesResponse,
 	UsersPagesRequest,
 	UsersPagesResponse,
-	UsersFlashsRequest,
-	UsersFlashsResponse,
 	UsersReactionsRequest,
 	UsersReactionsResponse,
 	UsersRecommendationRequest,
@@ -533,20 +518,6 @@ import type {
 	FetchExternalResourcesRequest,
 	FetchExternalResourcesResponse,
 	RetentionResponse,
-	BubbleGameRegisterRequest,
-	BubbleGameRankingRequest,
-	BubbleGameRankingResponse,
-	ReversiCancelMatchRequest,
-	ReversiGamesRequest,
-	ReversiGamesResponse,
-	ReversiMatchRequest,
-	ReversiMatchResponse,
-	ReversiInvitationsResponse,
-	ReversiShowGameRequest,
-	ReversiShowGameResponse,
-	ReversiSurrenderRequest,
-	ReversiVerifyRequest,
-	ReversiVerifyResponse,
 } from './entities.js';
 
 export type Endpoints = {
@@ -846,15 +817,6 @@ export type Endpoints = {
 	'pages/show': { req: PagesShowRequest; res: PagesShowResponse };
 	'pages/unlike': { req: PagesUnlikeRequest; res: EmptyResponse };
 	'pages/update': { req: PagesUpdateRequest; res: EmptyResponse };
-	'flash/create': { req: FlashCreateRequest; res: FlashCreateResponse };
-	'flash/delete': { req: FlashDeleteRequest; res: EmptyResponse };
-	'flash/featured': { req: EmptyRequest; res: FlashFeaturedResponse };
-	'flash/like': { req: FlashLikeRequest; res: EmptyResponse };
-	'flash/show': { req: FlashShowRequest; res: FlashShowResponse };
-	'flash/unlike': { req: FlashUnlikeRequest; res: EmptyResponse };
-	'flash/update': { req: FlashUpdateRequest; res: EmptyResponse };
-	'flash/my': { req: FlashMyRequest; res: FlashMyResponse };
-	'flash/my-likes': { req: FlashMyLikesRequest; res: FlashMyLikesResponse };
 	'ping': { req: EmptyRequest; res: PingResponse };
 	'pinned-users': { req: EmptyRequest; res: PinnedUsersResponse };
 	'promo/read': { req: PromoReadRequest; res: EmptyResponse };
@@ -894,7 +856,6 @@ export type Endpoints = {
 	'users/lists/get-memberships': { req: UsersListsGetMembershipsRequest; res: UsersListsGetMembershipsResponse };
 	'users/notes': { req: UsersNotesRequest; res: UsersNotesResponse };
 	'users/pages': { req: UsersPagesRequest; res: UsersPagesResponse };
-	'users/flashs': { req: UsersFlashsRequest; res: UsersFlashsResponse };
 	'users/reactions': { req: UsersReactionsRequest; res: UsersReactionsResponse };
 	'users/recommendation': { req: UsersRecommendationRequest; res: UsersRecommendationResponse };
 	'users/relation': { req: UsersRelationRequest; res: UsersRelationResponse };
@@ -906,13 +867,4 @@ export type Endpoints = {
 	'fetch-rss': { req: FetchRssRequest; res: FetchRssResponse };
 	'fetch-external-resources': { req: FetchExternalResourcesRequest; res: FetchExternalResourcesResponse };
 	'retention': { req: EmptyRequest; res: RetentionResponse };
-	'bubble-game/register': { req: BubbleGameRegisterRequest; res: EmptyResponse };
-	'bubble-game/ranking': { req: BubbleGameRankingRequest; res: BubbleGameRankingResponse };
-	'reversi/cancel-match': { req: ReversiCancelMatchRequest; res: EmptyResponse };
-	'reversi/games': { req: ReversiGamesRequest; res: ReversiGamesResponse };
-	'reversi/match': { req: ReversiMatchRequest; res: ReversiMatchResponse };
-	'reversi/invitations': { req: EmptyRequest; res: ReversiInvitationsResponse };
-	'reversi/show-game': { req: ReversiShowGameRequest; res: ReversiShowGameResponse };
-	'reversi/surrender': { req: ReversiSurrenderRequest; res: EmptyResponse };
-	'reversi/verify': { req: ReversiVerifyRequest; res: ReversiVerifyResponse };
 }

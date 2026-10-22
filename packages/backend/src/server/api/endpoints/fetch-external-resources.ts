@@ -39,6 +39,7 @@ export const meta = {
 		properties: {
 			type: {
 				type: 'string',
+				enum: ['theme'],
 			},
 			data: {
 				type: 'string',
@@ -67,7 +68,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				data: string;
 			}>(ps.url);
 
-			if (!res.data || !res.type) {
+			if (typeof res.data !== 'string' || !res.data || res.type !== 'theme') {
 				throw new ApiError(meta.errors.invalidSchema);
 			}
 

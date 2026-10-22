@@ -11,33 +11,6 @@ import type { BuiltinTheme as ShikiBuiltinTheme } from 'shiki';
 import { Storage } from '@/pizzax.js';
 import { hemisphere } from '@/scripts/intl-const.js';
 
-interface PostFormAction {
-	title: string,
-	handler: <T>(form: T, update: (key: unknown, value: unknown) => void) => void;
-}
-
-interface UserAction {
-	title: string,
-	handler: (user: Misskey.entities.UserDetailed) => void;
-}
-
-interface NoteAction {
-	title: string,
-	handler: (note: Misskey.entities.Note) => void;
-}
-
-interface NoteViewInterruptor {
-	handler: (note: Misskey.entities.Note) => unknown;
-}
-
-interface NotePostInterruptor {
-	handler: (note: FIXME) => unknown;
-}
-
-interface PageViewInterruptor {
-	handler: (page: Misskey.entities.Page) => unknown;
-}
-
 /** サウンド設定 */
 export type SoundStore = {
 	type: Exclude<SoundType, '_driveFile_'>;
@@ -53,13 +26,6 @@ export type SoundStore = {
 
 	volume: number;
 }
-
-export const postFormActions: PostFormAction[] = [];
-export const userActions: UserAction[] = [];
-export const noteActions: NoteAction[] = [];
-export const noteViewInterruptors: NoteViewInterruptor[] = [];
-export const notePostInterruptors: NotePostInterruptor[] = [];
-export const pageViewInterruptors: PageViewInterruptor[] = [];
 
 // TODO: それぞれいちいちwhereとかdefaultというキーを付けなきゃいけないの冗長なのでなんとかする(ただ型定義が面倒になりそう)
 //       あと、現行の定義の仕方なら「whereが何であるかに関わらずキー名の重複不可」という制約を付けられるメリットもあるからそのメリットを引き継ぐ方法も考えないといけない
@@ -510,21 +476,6 @@ export const defaultStore = markRaw(new Storage('base', {
 
 const PREFIX = 'miux:' as const;
 
-export type Plugin = {
-	id: string;
-	name: string;
-	active: boolean;
-	config?: Record<string, { default: any }>;
-	configData: Record<string, any>;
-	token: string;
-	src: string | null;
-	version: string;
-	ast: any[];
-	author?: string;
-	description?: string;
-	permissions?: string[];
-};
-
 interface Watcher {
 	key: string;
 	callback: (value: unknown) => void;
@@ -541,7 +492,6 @@ export class ColdDeviceStorage {
 		lightTheme,
 		darkTheme,
 		syncDeviceDarkMode: true,
-		plugins: [] as Plugin[],
 	};
 
 	public static watchers: Watcher[] = [];

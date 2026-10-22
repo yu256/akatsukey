@@ -303,15 +303,6 @@ import * as ep___pages_like from './endpoints/pages/like.js';
 import * as ep___pages_show from './endpoints/pages/show.js';
 import * as ep___pages_unlike from './endpoints/pages/unlike.js';
 import * as ep___pages_update from './endpoints/pages/update.js';
-import * as ep___flash_create from './endpoints/flash/create.js';
-import * as ep___flash_delete from './endpoints/flash/delete.js';
-import * as ep___flash_featured from './endpoints/flash/featured.js';
-import * as ep___flash_like from './endpoints/flash/like.js';
-import * as ep___flash_show from './endpoints/flash/show.js';
-import * as ep___flash_unlike from './endpoints/flash/unlike.js';
-import * as ep___flash_update from './endpoints/flash/update.js';
-import * as ep___flash_my from './endpoints/flash/my.js';
-import * as ep___flash_myLikes from './endpoints/flash/my-likes.js';
 import * as ep___ping from './endpoints/ping.js';
 import * as ep___pinnedUsers from './endpoints/pinned-users.js';
 import * as ep___promo_read from './endpoints/promo/read.js';
@@ -351,7 +342,6 @@ import * as ep___users_lists_updateMembership from './endpoints/users/lists/upda
 import * as ep___users_lists_getMemberships from './endpoints/users/lists/get-memberships.js';
 import * as ep___users_notes from './endpoints/users/notes.js';
 import * as ep___users_pages from './endpoints/users/pages.js';
-import * as ep___users_flashs from './endpoints/users/flashs.js';
 import * as ep___users_reactions from './endpoints/users/reactions.js';
 import * as ep___users_recommendation from './endpoints/users/recommendation.js';
 import * as ep___users_relation from './endpoints/users/relation.js';
@@ -363,15 +353,6 @@ import * as ep___users_updateMemo from './endpoints/users/update-memo.js';
 import * as ep___fetchRss from './endpoints/fetch-rss.js';
 import * as ep___fetchExternalResources from './endpoints/fetch-external-resources.js';
 import * as ep___retention from './endpoints/retention.js';
-import * as ep___bubbleGame_register from './endpoints/bubble-game/register.js';
-import * as ep___bubbleGame_ranking from './endpoints/bubble-game/ranking.js';
-import * as ep___reversi_cancelMatch from './endpoints/reversi/cancel-match.js';
-import * as ep___reversi_games from './endpoints/reversi/games.js';
-import * as ep___reversi_match from './endpoints/reversi/match.js';
-import * as ep___reversi_invitations from './endpoints/reversi/invitations.js';
-import * as ep___reversi_showGame from './endpoints/reversi/show-game.js';
-import * as ep___reversi_surrender from './endpoints/reversi/surrender.js';
-import * as ep___reversi_verify from './endpoints/reversi/verify.js';
 
 const eps = [
 	['admin/meta', ep___admin_meta],
@@ -671,15 +652,6 @@ const eps = [
 	['pages/show', ep___pages_show],
 	['pages/unlike', ep___pages_unlike],
 	['pages/update', ep___pages_update],
-	['flash/create', ep___flash_create],
-	['flash/delete', ep___flash_delete],
-	['flash/featured', ep___flash_featured],
-	['flash/like', ep___flash_like],
-	['flash/show', ep___flash_show],
-	['flash/unlike', ep___flash_unlike],
-	['flash/update', ep___flash_update],
-	['flash/my', ep___flash_my],
-	['flash/my-likes', ep___flash_myLikes],
 	['ping', ep___ping],
 	['pinned-users', ep___pinnedUsers],
 	['promo/read', ep___promo_read],
@@ -719,7 +691,6 @@ const eps = [
 	['users/lists/get-memberships', ep___users_lists_getMemberships],
 	['users/notes', ep___users_notes],
 	['users/pages', ep___users_pages],
-	['users/flashs', ep___users_flashs],
 	['users/reactions', ep___users_reactions],
 	['users/recommendation', ep___users_recommendation],
 	['users/relation', ep___users_relation],
@@ -731,15 +702,6 @@ const eps = [
 	['fetch-rss', ep___fetchRss],
 	['fetch-external-resources', ep___fetchExternalResources],
 	['retention', ep___retention],
-	['bubble-game/register', ep___bubbleGame_register],
-	['bubble-game/ranking', ep___bubbleGame_ranking],
-	['reversi/cancel-match', ep___reversi_cancelMatch],
-	['reversi/games', ep___reversi_games],
-	['reversi/match', ep___reversi_match],
-	['reversi/invitations', ep___reversi_invitations],
-	['reversi/show-game', ep___reversi_showGame],
-	['reversi/surrender', ep___reversi_surrender],
-	['reversi/verify', ep___reversi_verify],
 ];
 
 interface IEndpointMetaBase {

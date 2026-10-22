@@ -5,7 +5,7 @@ import darkPlus from 'shiki/themes/dark-plus.mjs';
 import { unique } from './array.js';
 import { deepClone } from './clone.js';
 import { deepMerge } from './merge.js';
-import type { HighlighterCore, LanguageRegistration, ThemeRegistration, ThemeRegistrationRaw } from 'shiki';
+import type { HighlighterCore, ThemeRegistration, ThemeRegistrationRaw } from 'shiki';
 import { ColdDeviceStorage } from '@/store.js';
 import lightTheme from '@/themes/_light.json5';
 import darkTheme from '@/themes/_dark.json5';
@@ -55,8 +55,6 @@ export async function getHighlighter(): Promise<HighlighterCore> {
 }
 
 export async function initHighlighter() {
-	const aiScriptGrammar = await import('aiscript-vscode/aiscript/syntaxes/aiscript.tmLanguage.json');
-
 	// テーマの重複を消す
 	const themes = unique([
 		darkPlus,
@@ -68,7 +66,6 @@ export async function initHighlighter() {
 		themes,
 		langs: [
 			import('shiki/langs/javascript.mjs'),
-			aiScriptGrammar.default as unknown as LanguageRegistration,
 		],
 	});
 

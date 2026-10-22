@@ -276,6 +276,7 @@ export default class Connection {
 	@bindThis
 	public connectChannel(id: string, params: any, channel: string, pong = false) {
 		const channelService = this.channelsService.getChannelService(channel);
+		if (!channelService) return;
 
 		if (channelService.requireCredential && this.user == null) {
 			return;

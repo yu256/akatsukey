@@ -12,7 +12,7 @@ import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import copyToClipboard from '@/scripts/copy-to-clipboard.js';
 import { url } from '@/config.js';
-import { defaultStore, noteActions } from '@/store.js';
+import { defaultStore } from '@/store.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { getUserMenu } from '@/scripts/get-user-menu.js';
 import { clipsCache } from '@/cache.js';
@@ -414,16 +414,6 @@ export function getNoteMenu(props: {
 			},
 		} : undefined]
 			.filter(x => x !== undefined);
-	}
-
-	if (noteActions.length > 0) {
-		menu = menu.concat([{ type: 'divider' }, ...noteActions.map(action => ({
-			icon: 'ti ti-plug',
-			text: action.title,
-			action: () => {
-				action.handler(appearNote);
-			},
-		}))]);
 	}
 
 	if (defaultStore.state.devMode) {

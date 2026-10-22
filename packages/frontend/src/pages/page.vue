@@ -90,8 +90,7 @@ import MkPagination from '@/components/MkPagination.vue';
 import MkPagePreview from '@/components/MkPagePreview.vue';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
-import { pageViewInterruptors, defaultStore } from '@/store.js';
-import { deepClone } from '@/scripts/clone.js';
+import { defaultStore } from '@/store.js';
 import { $i } from '@/account.js';
 import { isSupportShare } from '@/scripts/navigator.js';
 import copyToClipboard from '@/scripts/copy-to-clipboard.js';
@@ -119,15 +118,6 @@ function fetchPage() {
 		username: props.username,
 	}).then(async _page => {
 		page.value = _page;
-
-		// plugin
-		if (pageViewInterruptors.length > 0) {
-			let result = deepClone(_page);
-			for (const interruptor of pageViewInterruptors) {
-				result = await interruptor.handler(result);
-			}
-			page.value = result;
-		}
 	}).catch(err => {
 		error.value = err;
 	});

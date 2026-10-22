@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton inline @click="$emit('exit')">{{ i18n.ts.close }}</MkButton>
 		</header>
 		<Sortable
-			:modelValue="props.widgets"
+			:modelValue="availableWidgets"
 			itemKey="id"
 			handle=".handle"
 			:animation="150"
@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 		</Sortable>
 	</template>
-	<component :is="`widget-${widget.name}`" v-for="widget in widgets" v-else :key="widget.id" :ref="el => widgetRefs[widget.id] = el" :class="$style.widget" :widget="widget" @updateProps="updateWidget(widget.id, $event)" @contextmenu.stop="onContextmenu(widget, $event)"/>
+	<component :is="`widget-${widget.name}`" v-for="widget in availableWidgets" v-else :key="widget.id" :ref="el => widgetRefs[widget.id] = el" :class="$style.widget" :widget="widget" @updateProps="updateWidget(widget.id, $event)" @contextmenu.stop="onContextmenu(widget, $event)"/>
 </div>
 </template>
 
@@ -50,7 +50,7 @@ export type DefaultStoredWidget = {
 </script>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { v4 as uuid } from 'uuid';
 import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -72,6 +72,9 @@ const emit = defineEmits<{
 	(ev: 'updateWidget', widget: Partial<Widget>): void;
 	(ev: 'exit'): void;
 }>();
+
+// Ignore retired widgets in saved layouts without changing the stored data.
+const availableWidgets = computed(() => props.widgets.filter(widget => widgetDefs.includes(widget.name)));
 
 const widgetRefs = {};
 const configWidget = (id: string) => {

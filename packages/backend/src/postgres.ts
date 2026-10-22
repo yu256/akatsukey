@@ -189,6 +189,7 @@ export const entities = [
 	MiRetentionAggregation,
 	MiRole,
 	MiRoleAssignment,
+	// Retain the retired feature entities to preserve existing database schemas/data.
 	MiFlash,
 	MiFlashLike,
 	MiUserMemo,

@@ -129,14 +129,6 @@ const routes: RouteDef[] = [{
 		name: 'sounds',
 		component: page(() => import('@/pages/settings/sounds.vue')),
 	}, {
-		path: '/plugin/install',
-		name: 'plugin',
-		component: page(() => import('@/pages/settings/plugin.install.vue')),
-	}, {
-		path: '/plugin',
-		name: 'plugin',
-		component: page(() => import('@/pages/settings/plugin.vue')),
-	}, {
 		path: '/import-export',
 		name: 'import-export',
 		component: page(() => import('@/pages/settings/import-export.vue')),
@@ -259,9 +251,6 @@ const routes: RouteDef[] = [{
 	component: page(() => import('@/pages/api-console.vue')),
 	loginRequired: true,
 }, {
-	path: '/scratchpad',
-	component: page(() => import('@/pages/scratchpad.vue')),
-}, {
 	path: '/auth/:token',
 	component: page(() => import('@/pages/auth.vue')),
 }, {
@@ -290,20 +279,6 @@ const routes: RouteDef[] = [{
 }, {
 	path: '/pages',
 	component: page(() => import('@/pages/pages.vue')),
-}, {
-	path: '/play/:id/edit',
-	component: page(() => import('@/pages/flash/flash-edit.vue')),
-	loginRequired: true,
-}, {
-	path: '/play/new',
-	component: page(() => import('@/pages/flash/flash-edit.vue')),
-	loginRequired: true,
-}, {
-	path: '/play/:id',
-	component: page(() => import('@/pages/flash/flash.vue')),
-}, {
-	path: '/play',
-	component: page(() => import('@/pages/flash/flash-index.vue')),
 }, {
 	path: '/gallery/:postId/edit',
 	component: page(() => import('@/pages/gallery/edit.vue')),
@@ -545,22 +520,6 @@ const routes: RouteDef[] = [{
 	path: '/clicker',
 	component: page(() => import('@/pages/clicker.vue')),
 	loginRequired: true,
-}, {
-	path: '/games',
-	component: page(() => import('@/pages/games.vue')),
-	loginRequired: false,
-}, {
-	path: '/bubble-game',
-	component: page(() => import('@/pages/drop-and-fusion.vue')),
-	loginRequired: true,
-}, {
-	path: '/reversi',
-	component: page(() => import('@/pages/reversi/index.vue')),
-	loginRequired: false,
-}, {
-	path: '/reversi/g/:gameId',
-	component: page(() => import('@/pages/reversi/game.vue')),
-	loginRequired: false,
 }, {
 	path: '/timeline',
 	component: page(() => import('@/pages/timeline.vue')),

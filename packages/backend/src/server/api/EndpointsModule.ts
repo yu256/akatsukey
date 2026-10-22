@@ -303,15 +303,6 @@ import * as ep___pages_like from './endpoints/pages/like.js';
 import * as ep___pages_show from './endpoints/pages/show.js';
 import * as ep___pages_unlike from './endpoints/pages/unlike.js';
 import * as ep___pages_update from './endpoints/pages/update.js';
-import * as ep___flash_create from './endpoints/flash/create.js';
-import * as ep___flash_delete from './endpoints/flash/delete.js';
-import * as ep___flash_featured from './endpoints/flash/featured.js';
-import * as ep___flash_like from './endpoints/flash/like.js';
-import * as ep___flash_show from './endpoints/flash/show.js';
-import * as ep___flash_unlike from './endpoints/flash/unlike.js';
-import * as ep___flash_update from './endpoints/flash/update.js';
-import * as ep___flash_my from './endpoints/flash/my.js';
-import * as ep___flash_myLikes from './endpoints/flash/my-likes.js';
 import * as ep___ping from './endpoints/ping.js';
 import * as ep___pinnedUsers from './endpoints/pinned-users.js';
 import * as ep___promo_read from './endpoints/promo/read.js';
@@ -351,7 +342,6 @@ import * as ep___users_lists_updateMembership from './endpoints/users/lists/upda
 import * as ep___users_lists_getMemberships from './endpoints/users/lists/get-memberships.js';
 import * as ep___users_notes from './endpoints/users/notes.js';
 import * as ep___users_pages from './endpoints/users/pages.js';
-import * as ep___users_flashs from './endpoints/users/flashs.js';
 import * as ep___users_reactions from './endpoints/users/reactions.js';
 import * as ep___users_recommendation from './endpoints/users/recommendation.js';
 import * as ep___users_relation from './endpoints/users/relation.js';
@@ -363,15 +353,6 @@ import * as ep___users_updateMemo from './endpoints/users/update-memo.js';
 import * as ep___fetchRss from './endpoints/fetch-rss.js';
 import * as ep___fetchExternalResources from './endpoints/fetch-external-resources.js';
 import * as ep___retention from './endpoints/retention.js';
-import * as ep___bubbleGame_register from './endpoints/bubble-game/register.js';
-import * as ep___bubbleGame_ranking from './endpoints/bubble-game/ranking.js';
-import * as ep___reversi_cancelMatch from './endpoints/reversi/cancel-match.js';
-import * as ep___reversi_games from './endpoints/reversi/games.js';
-import * as ep___reversi_match from './endpoints/reversi/match.js';
-import * as ep___reversi_invitations from './endpoints/reversi/invitations.js';
-import * as ep___reversi_showGame from './endpoints/reversi/show-game.js';
-import * as ep___reversi_surrender from './endpoints/reversi/surrender.js';
-import * as ep___reversi_verify from './endpoints/reversi/verify.js';
 import { GetterService } from './GetterService.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import type { Provider } from '@nestjs/common';
@@ -673,15 +654,6 @@ const $pages_like: Provider = { provide: 'ep:pages/like', useClass: ep___pages_l
 const $pages_show: Provider = { provide: 'ep:pages/show', useClass: ep___pages_show.default };
 const $pages_unlike: Provider = { provide: 'ep:pages/unlike', useClass: ep___pages_unlike.default };
 const $pages_update: Provider = { provide: 'ep:pages/update', useClass: ep___pages_update.default };
-const $flash_create: Provider = { provide: 'ep:flash/create', useClass: ep___flash_create.default };
-const $flash_delete: Provider = { provide: 'ep:flash/delete', useClass: ep___flash_delete.default };
-const $flash_featured: Provider = { provide: 'ep:flash/featured', useClass: ep___flash_featured.default };
-const $flash_like: Provider = { provide: 'ep:flash/like', useClass: ep___flash_like.default };
-const $flash_show: Provider = { provide: 'ep:flash/show', useClass: ep___flash_show.default };
-const $flash_unlike: Provider = { provide: 'ep:flash/unlike', useClass: ep___flash_unlike.default };
-const $flash_update: Provider = { provide: 'ep:flash/update', useClass: ep___flash_update.default };
-const $flash_my: Provider = { provide: 'ep:flash/my', useClass: ep___flash_my.default };
-const $flash_myLikes: Provider = { provide: 'ep:flash/my-likes', useClass: ep___flash_myLikes.default };
 const $ping: Provider = { provide: 'ep:ping', useClass: ep___ping.default };
 const $pinnedUsers: Provider = { provide: 'ep:pinned-users', useClass: ep___pinnedUsers.default };
 const $promo_read: Provider = { provide: 'ep:promo/read', useClass: ep___promo_read.default };
@@ -721,7 +693,6 @@ const $users_lists_updateMembership: Provider = { provide: 'ep:users/lists/updat
 const $users_lists_getMemberships: Provider = { provide: 'ep:users/lists/get-memberships', useClass: ep___users_lists_getMemberships.default };
 const $users_notes: Provider = { provide: 'ep:users/notes', useClass: ep___users_notes.default };
 const $users_pages: Provider = { provide: 'ep:users/pages', useClass: ep___users_pages.default };
-const $users_flashs: Provider = { provide: 'ep:users/flashs', useClass: ep___users_flashs.default };
 const $users_reactions: Provider = { provide: 'ep:users/reactions', useClass: ep___users_reactions.default };
 const $users_recommendation: Provider = { provide: 'ep:users/recommendation', useClass: ep___users_recommendation.default };
 const $users_relation: Provider = { provide: 'ep:users/relation', useClass: ep___users_relation.default };
@@ -733,15 +704,6 @@ const $users_updateMemo: Provider = { provide: 'ep:users/update-memo', useClass:
 const $fetchRss: Provider = { provide: 'ep:fetch-rss', useClass: ep___fetchRss.default };
 const $fetchExternalResources: Provider = { provide: 'ep:fetch-external-resources', useClass: ep___fetchExternalResources.default };
 const $retention: Provider = { provide: 'ep:retention', useClass: ep___retention.default };
-const $bubbleGame_register: Provider = { provide: 'ep:bubble-game/register', useClass: ep___bubbleGame_register.default };
-const $bubbleGame_ranking: Provider = { provide: 'ep:bubble-game/ranking', useClass: ep___bubbleGame_ranking.default };
-const $reversi_cancelMatch: Provider = { provide: 'ep:reversi/cancel-match', useClass: ep___reversi_cancelMatch.default };
-const $reversi_games: Provider = { provide: 'ep:reversi/games', useClass: ep___reversi_games.default };
-const $reversi_match: Provider = { provide: 'ep:reversi/match', useClass: ep___reversi_match.default };
-const $reversi_invitations: Provider = { provide: 'ep:reversi/invitations', useClass: ep___reversi_invitations.default };
-const $reversi_showGame: Provider = { provide: 'ep:reversi/show-game', useClass: ep___reversi_showGame.default };
-const $reversi_surrender: Provider = { provide: 'ep:reversi/surrender', useClass: ep___reversi_surrender.default };
-const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep___reversi_verify.default };
 
 @Module({
 	imports: [
@@ -1047,15 +1009,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$pages_show,
 		$pages_unlike,
 		$pages_update,
-		$flash_create,
-		$flash_delete,
-		$flash_featured,
-		$flash_like,
-		$flash_show,
-		$flash_unlike,
-		$flash_update,
-		$flash_my,
-		$flash_myLikes,
 		$ping,
 		$pinnedUsers,
 		$promo_read,
@@ -1095,7 +1048,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$users_lists_getMemberships,
 		$users_notes,
 		$users_pages,
-		$users_flashs,
 		$users_reactions,
 		$users_recommendation,
 		$users_relation,
@@ -1107,15 +1059,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$fetchRss,
 		$fetchExternalResources,
 		$retention,
-		$bubbleGame_register,
-		$bubbleGame_ranking,
-		$reversi_cancelMatch,
-		$reversi_games,
-		$reversi_match,
-		$reversi_invitations,
-		$reversi_showGame,
-		$reversi_surrender,
-		$reversi_verify,
 	],
 	exports: [
 		$admin_meta,
@@ -1413,15 +1356,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$pages_show,
 		$pages_unlike,
 		$pages_update,
-		$flash_create,
-		$flash_delete,
-		$flash_featured,
-		$flash_like,
-		$flash_show,
-		$flash_unlike,
-		$flash_update,
-		$flash_my,
-		$flash_myLikes,
 		$ping,
 		$pinnedUsers,
 		$promo_read,
@@ -1459,7 +1393,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$users_lists_getMemberships,
 		$users_notes,
 		$users_pages,
-		$users_flashs,
 		$users_reactions,
 		$users_recommendation,
 		$users_relation,
@@ -1471,15 +1404,6 @@ const $reversi_verify: Provider = { provide: 'ep:reversi/verify', useClass: ep__
 		$fetchRss,
 		$fetchExternalResources,
 		$retention,
-		$bubbleGame_register,
-		$bubbleGame_ranking,
-		$reversi_cancelMatch,
-		$reversi_games,
-		$reversi_match,
-		$reversi_invitations,
-		$reversi_showGame,
-		$reversi_surrender,
-		$reversi_verify,
 	],
 })
 export class EndpointsModule {}

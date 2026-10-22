@@ -6,7 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { channel, clip, cookie, galleryPost, page, play, post, signup, simpleGet, uploadFile } from '../utils.js';
+import { channel, clip, cookie, galleryPost, page, post, signup, simpleGet, uploadFile } from '../utils.js';
 import type { SimpleGetResponse } from '../utils.js';
 import type * as misskey from 'misskey-js';
 
@@ -26,7 +26,6 @@ describe('Webリソース', () => {
 	let aliceUploadedFile: any;
 	let alicesPost: any;
 	let alicePage: any;
-	let alicePlay: any;
 	let aliceClip: any;
 	let aliceGalleryPost: any;
 	let aliceChannel: any;
@@ -82,7 +81,6 @@ describe('Webリソース', () => {
 			text: 'test',
 		});
 		alicePage = await page(alice, {});
-		alicePlay = await play(alice, {});
 		aliceClip = await clip(alice, {});
 		aliceGalleryPost = await galleryPost(alice, {
 			fileIds: [aliceUploadedFile.body.id],
@@ -391,27 +389,6 @@ describe('Webリソース', () => {
 				accept,
 			}));
 		});
-	});
-
-	describe('/play/:id', () => {
-		const path = (playid: string): string => `/play/${playid}`;
-
-		test('がGETできる。', async () => {
-			const res = await ok({
-				path: path(alicePlay.id),
-			});
-			assert.strictEqual(metaTag(res, 'misskey:user-username'), alice.username);
-			assert.strictEqual(metaTag(res, 'misskey:user-id'), alice.id);
-			assert.strictEqual(metaTag(res, 'misskey:flash-id'), alicePlay.id);
-
-			// TODO ogタグの検証
-			// TODO profile.noCrawleの検証
-			// TODO twitter:creatorの検証
-		});
-
-		test('がGETできる。(存在しないIDでも。)', async () => await ok({
-			path: path('xxxxxxxxxx'),
-		}));
 	});
 
 	describe('/clips/:clip', () => {

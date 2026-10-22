@@ -471,15 +471,6 @@ type BlockingListRequest = operations['blocking/list']['requestBody']['content']
 type BlockingListResponse = operations['blocking/list']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type BubbleGameRankingRequest = operations['bubble-game/ranking']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type BubbleGameRankingResponse = operations['bubble-game/ranking']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type BubbleGameRegisterRequest = operations['bubble-game/register']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
 type Channel = components['schemas']['Channel'];
 
 // Warning: (ae-forgotten-export) The symbol "AnyOf" needs to be exported by the entry point index.d.ts
@@ -684,46 +675,6 @@ export type Channels = {
             };
         };
         receives: null;
-    };
-    reversiGame: {
-        params: {
-            gameId: string;
-        };
-        events: {
-            started: (payload: {
-                game: ReversiGameDetailed;
-            }) => void;
-            ended: (payload: {
-                winnerId: User['id'] | null;
-                game: ReversiGameDetailed;
-            }) => void;
-            canceled: (payload: {
-                userId: User['id'];
-            }) => void;
-            changeReadyStates: (payload: {
-                user1: boolean;
-                user2: boolean;
-            }) => void;
-            updateSettings: (payload: {
-                userId: User['id'];
-                key: string;
-                value: any;
-            }) => void;
-            log: (payload: Record<string, any>) => void;
-        };
-        receives: {
-            putStone: {
-                pos: number;
-                id: string;
-            };
-            ready: boolean;
-            cancel: null | Record<string, never>;
-            updateSettings: {
-                key: string;
-                value: any;
-            };
-            claimTimeIsUp: null | Record<string, never>;
-        };
     };
 };
 
@@ -1416,7 +1367,6 @@ declare namespace entities {
         IAppsResponse,
         IAuthorizedAppsRequest,
         IAuthorizedAppsResponse,
-        IClaimAchievementRequest,
         IChangePasswordRequest,
         IDeleteAccountRequest,
         IExportFollowingRequest,
@@ -1558,19 +1508,6 @@ declare namespace entities {
         PagesShowResponse,
         PagesUnlikeRequest,
         PagesUpdateRequest,
-        FlashCreateRequest,
-        FlashCreateResponse,
-        FlashDeleteRequest,
-        FlashFeaturedResponse,
-        FlashLikeRequest,
-        FlashShowRequest,
-        FlashShowResponse,
-        FlashUnlikeRequest,
-        FlashUpdateRequest,
-        FlashMyRequest,
-        FlashMyResponse,
-        FlashMyLikesRequest,
-        FlashMyLikesResponse,
         PingResponse,
         PinnedUsersResponse,
         PromoReadRequest,
@@ -1632,8 +1569,6 @@ declare namespace entities {
         UsersNotesResponse,
         UsersPagesRequest,
         UsersPagesResponse,
-        UsersFlashsRequest,
-        UsersFlashsResponse,
         UsersReactionsRequest,
         UsersReactionsResponse,
         UsersRecommendationRequest,
@@ -1647,28 +1582,12 @@ declare namespace entities {
         UsersSearchResponse,
         UsersShowRequest,
         UsersShowResponse,
-        UsersAchievementsRequest,
-        UsersAchievementsResponse,
         UsersUpdateMemoRequest,
         FetchRssRequest,
         FetchRssResponse,
         FetchExternalResourcesRequest,
         FetchExternalResourcesResponse,
         RetentionResponse,
-        BubbleGameRegisterRequest,
-        BubbleGameRankingRequest,
-        BubbleGameRankingResponse,
-        ReversiCancelMatchRequest,
-        ReversiGamesRequest,
-        ReversiGamesResponse,
-        ReversiMatchRequest,
-        ReversiMatchResponse,
-        ReversiInvitationsResponse,
-        ReversiShowGameRequest,
-        ReversiShowGameResponse,
-        ReversiSurrenderRequest,
-        ReversiVerifyRequest,
-        ReversiVerifyResponse,
         Error_2 as Error,
         UserLite,
         UserDetailedNotMeOnly,
@@ -1703,7 +1622,6 @@ declare namespace entities {
         GalleryPost,
         EmojiSimple,
         EmojiDetailed,
-        Flash,
         Signin,
         RoleCondFormulaLogics,
         RoleCondFormulaValueNot,
@@ -1713,9 +1631,7 @@ declare namespace entities {
         RoleCondFormulaValue,
         RoleLite,
         Role,
-        RolePolicies,
-        ReversiGameLite,
-        ReversiGameDetailed
+        RolePolicies
     }
 }
 export { entities }
@@ -1790,48 +1706,6 @@ type FetchRssRequest = operations['fetch-rss']['requestBody']['content']['applic
 
 // @public (undocumented)
 type FetchRssResponse = operations['fetch-rss']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type Flash = components['schemas']['Flash'];
-
-// @public (undocumented)
-type FlashCreateRequest = operations['flash/create']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashCreateResponse = operations['flash/create']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type FlashDeleteRequest = operations['flash/delete']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashFeaturedResponse = operations['flash/featured']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type FlashLikeRequest = operations['flash/like']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashMyLikesRequest = operations['flash/my-likes']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashMyLikesResponse = operations['flash/my-likes']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type FlashMyRequest = operations['flash/my']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashMyResponse = operations['flash/my']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type FlashShowRequest = operations['flash/show']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashShowResponse = operations['flash/show']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type FlashUnlikeRequest = operations['flash/unlike']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type FlashUpdateRequest = operations['flash/update']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 export const followersVisibilities: readonly ["public", "followers", "private"];
@@ -2018,9 +1892,6 @@ type IAuthorizedAppsResponse = operations['i/authorized-apps']['responses']['200
 
 // @public (undocumented)
 type IChangePasswordRequest = operations['i/change-password']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type IClaimAchievementRequest = operations['i/claim-achievement']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type ID = string;
@@ -2553,7 +2424,7 @@ type Notification_2 = components['schemas']['Notification'];
 type NotificationsCreateRequest = operations['notifications/create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app", "roleAssigned", "achievementEarned"];
+export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app", "roleAssigned"];
 
 // @public (undocumented)
 type Page = components['schemas']['Page'];
@@ -2604,7 +2475,7 @@ type PagesUpdateRequest = operations['pages/update']['requestBody']['content']['
 function parse(acct: string): Acct;
 
 // @public (undocumented)
-export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "read:admin:show-users", "write:admin:suspend-user", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse"];
+export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "read:admin:show-users", "write:admin:suspend-user", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse"];
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
@@ -2660,45 +2531,6 @@ type ResetPasswordRequest = operations['reset-password']['requestBody']['content
 
 // @public (undocumented)
 type RetentionResponse = operations['retention']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiCancelMatchRequest = operations['reversi/cancel-match']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiGameDetailed = components['schemas']['ReversiGameDetailed'];
-
-// @public (undocumented)
-type ReversiGameLite = components['schemas']['ReversiGameLite'];
-
-// @public (undocumented)
-type ReversiGamesRequest = operations['reversi/games']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiGamesResponse = operations['reversi/games']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiInvitationsResponse = operations['reversi/invitations']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiMatchRequest = operations['reversi/match']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiMatchResponse = operations['reversi/match']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiShowGameRequest = operations['reversi/show-game']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiShowGameResponse = operations['reversi/show-game']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiSurrenderRequest = operations['reversi/surrender']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiVerifyRequest = operations['reversi/verify']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type ReversiVerifyResponse = operations['reversi/verify']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type Role = components['schemas']['Role'];
@@ -2919,12 +2751,6 @@ type UsernameAvailableRequest = operations['username/available']['requestBody'][
 type UsernameAvailableResponse = operations['username/available']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-type UsersAchievementsRequest = operations['users/achievements']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type UsersAchievementsResponse = operations['users/achievements']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
 type UsersClipsRequest = operations['users/clips']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -2935,12 +2761,6 @@ type UsersFeaturedNotesRequest = operations['users/featured-notes']['requestBody
 
 // @public (undocumented)
 type UsersFeaturedNotesResponse = operations['users/featured-notes']['responses']['200']['content']['application/json'];
-
-// @public (undocumented)
-type UsersFlashsRequest = operations['users/flashs']['requestBody']['content']['application/json'];
-
-// @public (undocumented)
-type UsersFlashsResponse = operations['users/flashs']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type UsersFollowersRequest = operations['users/followers']['requestBody']['content']['application/json'];

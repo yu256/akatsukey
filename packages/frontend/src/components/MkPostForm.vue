@@ -77,7 +77,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
-			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
 			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
 		</div>
@@ -109,13 +108,12 @@ import { Autocomplete } from '@/scripts/autocomplete.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { selectFiles } from '@/scripts/select-file.js';
-import { defaultStore, notePostInterruptors, postFormActions } from '@/store.js';
+import { defaultStore } from '@/store.js';
 import MkInfo from '@/components/MkInfo.vue';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import { signinRequired, getAccounts, openAccountMenu as openAccountMenu_ } from '@/account.js';
 import { uploadFile } from '@/scripts/upload.js';
-import { deepClone } from '@/scripts/clone.js';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import { miLocalStorage } from '@/local-storage.js';
 import { emojiPicker } from '@/scripts/emoji-picker.js';
@@ -740,17 +738,6 @@ async function post(ev?: MouseEvent) {
 		}
 	}
 
-	// plugin
-	if (notePostInterruptors.length > 0) {
-		for (const interruptor of notePostInterruptors) {
-			try {
-				postData = await interruptor.handler(deepClone(postData)) as typeof postData;
-			} catch (err) {
-				console.error(err);
-			}
-		}
-	}
-
 	let token: string | undefined = undefined;
 
 	if (postAccount.value) {
@@ -818,22 +805,6 @@ async function insertMfmFunction(ev: MouseEvent) {
 		textareaEl.value,
 		text,
 	);
-}
-
-function showActions(ev: MouseEvent) {
-	os.popupMenu(postFormActions.map(action => ({
-		text: action.title,
-		action: () => {
-			action.handler({
-				text: text.value,
-				cw: cw.value,
-			}, (key, value: any) => {
-				if (typeof key !== 'string') return;
-				if (key === 'text') { text.value = value; }
-				if (key === 'cw') { useCw.value = value !== null; cw.value = value; }
-			});
-		},
-	})), ev.currentTarget ?? ev.target);
 }
 
 const postAccount = ref<Misskey.entities.UserDetailed | null>(null);

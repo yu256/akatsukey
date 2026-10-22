@@ -12,7 +12,7 @@ import { useStream } from '@/stream.js';
 import * as sound from '@/scripts/sound.js';
 import { $i, signout, updateAccount } from '@/account.js';
 import { fetchInstance, instance } from '@/instance.js';
-import { ColdDeviceStorage, defaultStore } from '@/store.js';
+import { defaultStore } from '@/store.js';
 import { makeHotkey } from '@/scripts/hotkey.js';
 import { reactionPicker } from '@/scripts/reaction-picker.js';
 import { miLocalStorage } from '@/local-storage.js';
@@ -57,14 +57,6 @@ export async function mainBoot() {
 			}
 		}
 	});
-
-	for (const plugin of ColdDeviceStorage.get('plugins').filter(p => p.active)) {
-		import('@/plugin.js').then(async ({ install }) => {
-			// Workaround for https://bugs.webkit.org/show_bug.cgi?id=242740
-			await new Promise(r => setTimeout(r, 0));
-			install(plugin);
-		});
-	}
 
 	const hotkeys = {
 		'd': (): void => {

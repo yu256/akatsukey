@@ -42,7 +42,6 @@ With Misskey's built in drive, you get cloud storage right in your social media,
 - **Rich Web UI**\
 	Misskey has a rich and easy to use Web UI!
 	It is highly customizable, from changing the layout and adding widgets to making custom themes.
-	Furthermore, plugins can be created using AiScript, an original programming language.
 - And much more...
 
 </div>

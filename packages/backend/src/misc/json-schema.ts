@@ -34,7 +34,6 @@ import { packedFederationInstanceSchema } from '@/models/json-schema/federation-
 import { packedQueueCountSchema } from '@/models/json-schema/queue.js';
 import { packedGalleryPostSchema } from '@/models/json-schema/gallery-post.js';
 import { packedEmojiDetailedSchema, packedEmojiSimpleSchema } from '@/models/json-schema/emoji.js';
-import { packedFlashSchema } from '@/models/json-schema/flash.js';
 import { packedAnnouncementSchema } from '@/models/json-schema/announcement.js';
 import { packedSigninSchema } from '@/models/json-schema/signin.js';
 import {
@@ -49,7 +48,6 @@ import {
 	packedRoleCondFormulaValueSchema,
 } from '@/models/json-schema/role.js';
 import { packedAdSchema } from '@/models/json-schema/ad.js';
-import { packedReversiGameLiteSchema, packedReversiGameDetailedSchema } from '@/models/json-schema/reversi-game.js';
 
 export const refs = {
 	UserLite: packedUserLiteSchema,
@@ -86,7 +84,6 @@ export const refs = {
 	GalleryPost: packedGalleryPostSchema,
 	EmojiSimple: packedEmojiSimpleSchema,
 	EmojiDetailed: packedEmojiDetailedSchema,
-	Flash: packedFlashSchema,
 	Signin: packedSigninSchema,
 	RoleCondFormulaLogics: packedRoleCondFormulaLogicsSchema,
 	RoleCondFormulaValueNot: packedRoleCondFormulaValueNot,
@@ -97,8 +94,6 @@ export const refs = {
 	RoleLite: packedRoleLiteSchema,
 	Role: packedRoleSchema,
 	RolePolicies: packedRolePoliciesSchema,
-	ReversiGameLite: packedReversiGameLiteSchema,
-	ReversiGameDetailed: packedReversiGameDetailedSchema,
 };
 
 export type Packed<x extends keyof typeof refs> = SchemaType<typeof refs[x]>;

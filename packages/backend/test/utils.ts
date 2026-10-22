@@ -210,17 +210,6 @@ export const page = async (user: UserToken, page: any = {}): Promise<any> => {
 	return res.body;
 };
 
-export const play = async (user: UserToken, play: any = {}): Promise<any> => {
-	const res = await api('flash/create', {
-		permissions: [],
-		script: 'test',
-		summary: '',
-		title: 'test',
-		...play,
-	}, user);
-	return res.body;
-};
-
 export const clip = async (user: UserToken, clip: any = {}): Promise<any> => {
 	const res = await api('clips/create', {
 		description: null,

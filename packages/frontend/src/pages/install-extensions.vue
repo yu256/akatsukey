@@ -10,13 +10,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkLoading v-if="uiPhase === 'fetching'"/>
 		<div v-else-if="uiPhase === 'confirm' && data" class="_gaps_m" :class="$style.extInstallerRoot">
 			<div :class="$style.extInstallerIconWrapper">
-				<i v-if="data.type === 'plugin'" class="ti ti-plug"></i>
-				<i v-else-if="data.type === 'theme'" class="ti ti-palette"></i>
-				<i v-else class="ti ti-download"></i>
+				<i class="ti ti-palette"></i>
 			</div>
 			<h2 :class="$style.extInstallerTitle">{{ i18n.ts._externalResourceInstaller[`_${data.type}`].title }}</h2>
 			<div :class="$style.extInstallerNormDesc">{{ i18n.ts._externalResourceInstaller.checkVendorBeforeInstall }}</div>
-			<MkInfo v-if="data.type === 'plugin'" :warn="true">{{ i18n.ts._plugin.installWarn }}</MkInfo>
 			<FormSection>
 				<template #label>{{ i18n.ts._externalResourceInstaller[`_${data.type}`].metaTitle }}</template>
 				<div class="_gaps_s">
@@ -30,23 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #value>{{ data.meta?.author }}</template>
 						</MkKeyValue>
 					</FormSplit>
-					<MkKeyValue v-if="data.type === 'plugin'">
-						<template #key>{{ i18n.ts.description }}</template>
-						<template #value>{{ data.meta?.description }}</template>
-					</MkKeyValue>
-					<MkKeyValue v-if="data.type === 'plugin'">
-						<template #key>{{ i18n.ts.version }}</template>
-						<template #value>{{ data.meta?.version }}</template>
-					</MkKeyValue>
-					<MkKeyValue v-if="data.type === 'plugin'">
-						<template #key>{{ i18n.ts.permission }}</template>
-						<template #value>
-							<ul :class="$style.extInstallerKVList">
-								<li v-for="permission in data.meta?.permissions" :key="permission">{{ i18n.ts._permissions[permission] }}</li>
-							</ul>
-						</template>
-					</MkKeyValue>
-					<MkKeyValue v-if="data.type === 'theme' && data.meta?.base">
+					<MkKeyValue v-if="data.meta?.base">
 						<template #key>{{ i18n.ts._externalResourceInstaller._meta.base }}</template>
 						<template #value>{{ i18n.ts[data.meta.base] }}</template>
 					</MkKeyValue>
@@ -101,14 +82,11 @@ import FormSection from '@/components/form/section.vue';
 import FormSplit from '@/components/form/split.vue';
 import MkCode from '@/components/MkCode.vue';
 import MkUrl from '@/components/global/MkUrl.vue';
-import MkInfo from '@/components/MkInfo.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
-import { AiScriptPluginMeta, parsePluginMeta, installPlugin } from '@/scripts/install-plugin.js';
 import { parseThemeCode, installTheme } from '@/scripts/install-theme.js';
-import { unisonReload } from '@/scripts/unison-reload.js';
 import { i18n } from '@/i18n.js';
 import { definePageMetadata } from '@/scripts/page-metadata.js';
 
@@ -125,20 +103,13 @@ const url = ref<string | null>(null);
 const hash = ref<string | null>(null);
 
 const data = ref<{
-	type: 'plugin' | 'theme';
+	type: 'theme';
 	raw: string;
 	meta?: {
-		// Plugin & Theme Common
 		name: string;
 		author: string;
 
-		// Plugin
 		description?: string;
-		version?: string;
-		permissions?: string[];
-		config?: Record<string, any>;
-
-		// Theme
 		base?: 'light' | 'dark';
 	};
 } | null>(null);
@@ -200,25 +171,6 @@ async function fetch() {
 	}
 
 	switch (res.type) {
-		case 'plugin':
-			try {
-				const meta = await parsePluginMeta(res.data);
-				data.value = {
-					type: 'plugin',
-					meta,
-					raw: res.data,
-				};
-			} catch (err) {
-				errorKV.value = {
-					title: i18n.ts._externalResourceInstaller._errors._pluginParseFailed.title,
-					description: i18n.ts._externalResourceInstaller._errors._pluginParseFailed.description,
-				};
-				console.error(err);
-				uiPhase.value = 'error';
-				return;
-			}
-			break;
-
 		case 'theme':
 			try {
 				const metaRaw = parseThemeCode(res.data);
@@ -270,23 +222,6 @@ async function install() {
 	if (!data.value) return;
 
 	switch (data.value.type) {
-		case 'plugin':
-			if (!data.value.meta) return;
-			try {
-				await installPlugin(data.value.raw, data.value.meta as AiScriptPluginMeta);
-				os.success();
-				nextTick(() => {
-					unisonReload('/');
-				});
-			} catch (err) {
-				errorKV.value = {
-					title: i18n.ts._externalResourceInstaller._errors._pluginInstallFailed.title,
-					description: i18n.ts._externalResourceInstaller._errors._pluginInstallFailed.description,
-				};
-				console.error(err);
-				uiPhase.value = 'error';
-			}
-			break;
 		case 'theme':
 			if (!data.value.meta) return;
 			await installTheme(data.value.raw);

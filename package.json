@@ -12,8 +12,7 @@
 		"packages/backend",
 		"packages/sw",
 		"packages/misskey-js",
-		"packages/misskey-reversi",
-		"packages/misskey-bubble-game"
+		"packages/misskey-js/generator"
 	],
 	"private": true,
 	"scripts": {

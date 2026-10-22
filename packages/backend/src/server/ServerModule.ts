@@ -43,8 +43,6 @@ import { QueueStatsChannelService } from './api/stream/channels/queue-stats.js';
 import { ServerStatsChannelService } from './api/stream/channels/server-stats.js';
 import { UserListChannelService } from './api/stream/channels/user-list.js';
 import { RoleTimelineChannelService } from './api/stream/channels/role-timeline.js';
-import { ReversiChannelService } from './api/stream/channels/reversi.js';
-import { ReversiGameChannelService } from './api/stream/channels/reversi-game.js';
 import { NoteStreamingHidingService } from './api/stream/NoteStreamingHidingService.js';
 
 @Module({
@@ -81,8 +79,6 @@ import { NoteStreamingHidingService } from './api/stream/NoteStreamingHidingServ
 		GlobalTimelineChannelService,
 		HashtagChannelService,
 		RoleTimelineChannelService,
-		ReversiChannelService,
-		ReversiGameChannelService,
 		HomeTimelineChannelService,
 		HybridTimelineChannelService,
 		LocalTimelineChannelService,
