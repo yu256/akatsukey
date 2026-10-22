@@ -6,6 +6,7 @@
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as stream from 'node:stream/promises';
+import type { Readable } from 'node:stream';
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
@@ -30,6 +31,38 @@ const accessDenied = {
 	code: 'ACCESS_DENIED',
 	id: '56f35758-7dd5-468b-8439-5d6fb8ec9b8e',
 };
+
+async function writeMultipartFileToTemp(file: Readable, path: string): Promise<Error | null> {
+	const dest = fs.createWriteStream(path);
+	let failed = false;
+
+	const reading = stream.finished(file, { writable: false }).then(() => null, (err: Error) => {
+		if (failed) return null;
+		failed = true;
+		return err;
+	});
+	const writing = stream.finished(dest, { readable: false }).then(() => null, (err: Error) => {
+		if (failed) return null;
+		failed = true;
+		file.destroy();
+		return err;
+	});
+
+	file.pipe(dest, { end: false });
+
+	const readError = await reading;
+	if (failed) {
+		file.destroy();
+		dest.destroy();
+	} else {
+		dest.end();
+	}
+	const writeError = await writing;
+
+	if (readError != null) return readError;
+	if (writeError != null) throw writeError;
+	return null;
+}
 
 @Injectable()
 export class ApiCallService implements OnApplicationShutdown {
@@ -140,7 +173,20 @@ export class ApiCallService implements OnApplicationShutdown {
 		}
 
 		const [path] = await createTemp();
-		await stream.pipeline(multipartData.file, fs.createWriteStream(path));
+		const multipartError = await writeMultipartFileToTemp(multipartData.file, path);
+
+		if (multipartError != null) {
+			this.logger.debug(`Failed to read the multipart request body: ${multipartError.message}`);
+			reply.code(400);
+			reply.send();
+			return;
+		}
+
+		if (multipartData.file.truncated) {
+			reply.code(413);
+			reply.send();
+			return;
+		}
 
 		const fields = {} as Record<string, unknown>;
 		for (const [k, v] of Object.entries(multipartData.fields)) {
