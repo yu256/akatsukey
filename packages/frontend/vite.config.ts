@@ -1,4 +1,5 @@
 import path from 'path';
+import { readFileSync } from 'node:fs';
 import pluginReplace from '@rollup/plugin-replace';
 import pluginVue from '@vitejs/plugin-vue';
 import { type UserConfig, defineConfig } from 'vite';
@@ -9,6 +10,7 @@ import pluginUnwindCssModuleClassName from './lib/rollup-plugin-unwind-css-modul
 import pluginJson5 from './vite.json5.js';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
+const mfmLicense = readFileSync(path.resolve(__dirname, '../../patches/mfm-js.LICENSE'), 'utf8').trim();
 
 const hash = (str: string, seed = 0): number => {
 	let h1 = 0xdeadbeef ^ seed,
@@ -52,6 +54,18 @@ export function getConfig(): UserConfig {
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
+			{
+				name: 'mfm-license',
+				apply: 'build',
+				renderChunk: {
+					// Add after code transforms, which can discard comments.
+					order: 'post',
+					handler(code, chunk) {
+						if (!Object.keys(chunk.modules).some(id => id.includes('/node_modules/mfm-js/'))) return null;
+						return { code: `/*! mfm-js\n${mfmLicense}\n*/\n${code}`, map: null };
+					},
+				},
+			},
 			...process.env.NODE_ENV === 'production'
 				? [
 					pluginReplace({

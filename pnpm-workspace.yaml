@@ -39,3 +39,7 @@ allowBuilds:
   '@parcel/watcher': false
   unrs-resolver: false
   msw: false
+patchedDependencies:
+  # DoS fix only; retain 0.24's emoji and mention behavior.
+  # Upstream: https://github.com/misskey-dev/mfm.js/commit/7e3dda43ee86135fe1b8f6488b67e06972559ecb
+  mfm-js@0.24.0: patches/mfm-js@0.24.0.patch

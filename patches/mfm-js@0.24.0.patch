@@ -1,0 +1,91 @@
+diff --git a/built/internal/parser.js b/built/internal/parser.js
+index 4714f3a6e4350ba79a5f47c33d2df1a3132e9bb6..d009d8a0e61d1aba4bc482b845e7dc8015d1a104 100644
+--- a/built/internal/parser.js
++++ b/built/internal/parser.js
+@@ -76,6 +76,21 @@ function nest(parser, fallback) {
+         return result;
+     });
+ }
++function getLinkLabelFailures(input, state) {
++    // Boundaries are tracked per input (quotes use separate inputs) and depth.
++    state.linkLabelFailures ??= new Map();
++    let byDepth = state.linkLabelFailures.get(input);
++    if (byDepth == null) {
++        byDepth = new Map();
++        state.linkLabelFailures.set(input, byDepth);
++    }
++    let failures = byDepth.get(state.depth);
++    if (failures == null) {
++        failures = new Set();
++        byDepth.set(state.depth, failures);
++    }
++    return failures;
++}
+ exports.language = P.createLanguage({
+     fullParser: r => {
+         return r.full.many(0);
+@@ -576,22 +591,54 @@ exports.language = P.createLanguage({
+             return result;
+         });
+         const closeLabel = P.str(']');
+-        return P.seq([
++        const openLabel = P.seq([
+             notLinkLabel,
+             P.alt([P.str('?['), P.str('[')]),
+-            P.seq([
+-                P.notMatch(P.alt([closeLabel, newLine])),
+-                nest(labelInline),
+-            ], 1).many(1),
++        ], 1);
++        const labelItem = P.seq([
++            P.notMatch(P.alt([closeLabel, newLine])),
++            nest(labelInline),
++        ], 1);
++        const afterLabel = P.seq([
+             closeLabel,
+             P.str('('),
+             P.alt([r.urlAlt, r.url]),
+             P.str(')'),
+-        ]).map(result => {
+-            const silent = (result[1] === '?[');
+-            const label = result[2];
+-            const url = result[5];
+-            return M.LINK(silent, url.props.url, (0, util_1.mergeText)(label));
++        ], 2);
++        return new P.Parser((input, index, state) => {
++            const openResult = openLabel.handler(input, index, state);
++            if (!openResult.success) {
++                return P.failure();
++            }
++            const failedBoundaries = getLinkLabelFailures(input, state);
++            const boundaries = [];
++            const label = [];
++            let latestIndex = openResult.index;
++            while (!failedBoundaries.has(latestIndex)) {
++                boundaries.push(latestIndex);
++                if (latestIndex >= input.length) {
++                    break;
++                }
++                const itemResult = labelItem.handler(input, latestIndex, state);
++                if (!itemResult.success) {
++                    break;
++                }
++                label.push(itemResult.value);
++                latestIndex = itemResult.index;
++            }
++            if (label.length === 0) {
++                return P.failure();
++            }
++            const knownFailure = failedBoundaries.has(latestIndex);
++            const afterResult = knownFailure ? P.failure() : afterLabel.handler(input, latestIndex, state);
++            if (!afterResult.success || typeof afterResult.value === 'string') {
++                for (const boundary of boundaries) {
++                    failedBoundaries.add(boundary);
++                }
++                return P.failure();
++            }
++            const silent = (openResult.value === '?[');
++            return P.success(afterResult.index, M.LINK(silent, afterResult.value.props.url, (0, util_1.mergeText)(label)));
+         });
+     },
+     url: r => {

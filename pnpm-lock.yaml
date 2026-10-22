@@ -171,6 +171,9 @@ overrides:
   ip-cidr>ip-address: 10.7.4
   '@misskey-dev/summaly>fastify': 5.12.7
 
+patchedDependencies:
+  mfm-js@0.24.0: 9df56478eb359f37b2cef65642776a3becbebb10ab4aa84f2206c5d8ee0e052e
+
 importers:
 
   .:
@@ -418,7 +421,7 @@ importers:
         version: 0.62.0
       mfm-js:
         specifier: 0.24.0
-        version: 0.24.0
+        version: 0.24.0(patch_hash=9df56478eb359f37b2cef65642776a3becbebb10ab4aa84f2206c5d8ee0e052e)
       microformats-parser:
         specifier: 2.0.6
         version: 2.0.6
@@ -903,7 +906,7 @@ importers:
         version: 0.19.0
       mfm-js:
         specifier: 0.24.0
-        version: 0.24.0
+        version: 0.24.0(patch_hash=9df56478eb359f37b2cef65642776a3becbebb10ab4aa84f2206c5d8ee0e052e)
       misskey-bubble-game:
         specifier: workspace:*
         version: link:../misskey-bubble-game
@@ -18162,7 +18165,7 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  mfm-js@0.24.0:
+  mfm-js@0.24.0(patch_hash=9df56478eb359f37b2cef65642776a3becbebb10ab4aa84f2206c5d8ee0e052e):
     dependencies:
       '@twemoji/parser': 15.0.0
 

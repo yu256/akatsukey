@@ -6,6 +6,12 @@ And is distributed under The GNU Affero General Public License Version 3, you sh
 
 Misskey includes several third-party Open-Source softwares.
 
+mfm-js by Marihachi and other contributors
+License: MIT (full text in patches/mfm-js.LICENSE)
+https://github.com/misskey-dev/mfm.js
+Local DoS fix backported from:
+https://github.com/misskey-dev/mfm.js/commit/7e3dda43ee86135fe1b8f6488b67e06972559ecb
+
 Emoji keywords for Unicode 11 and below by Mu-An Chiou
 License: MIT
 https://github.com/muan/emojilib/blob/master/LICENSE
