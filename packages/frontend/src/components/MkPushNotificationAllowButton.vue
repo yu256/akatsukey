@@ -48,6 +48,7 @@ import { instance } from '@/instance.js';
 import { apiWithDialog, promiseDialog } from '@/os.js';
 import { misskeyApi } from '@/scripts/misskey-api.js';
 import { i18n } from '@/i18n.js';
+import { encodePushSubscriptionKey } from '@/scripts/encode-push-subscription-key.js';
 
 defineProps<{
 	primary?: boolean;
@@ -85,8 +86,8 @@ function subscribe() {
 			// Register
 			pushRegistrationInServer.value = await misskeyApi('sw/register', {
 				endpoint: subscription.endpoint,
-				auth: encode(subscription.getKey('auth')),
-				publickey: encode(subscription.getKey('p256dh')),
+				auth: encodePushSubscriptionKey(subscription.getKey('auth')),
+				publickey: encodePushSubscriptionKey(subscription.getKey('p256dh')),
 			});
 		}, async err => { // When subscribe failed
 		// 通知が許可されていなかったとき
@@ -106,7 +107,11 @@ function subscribe() {
 async function unsubscribe() {
 	if (!pushSubscription.value) return;
 
-	const endpoint = pushSubscription.value.endpoint;
+	const params = {
+		endpoint: pushSubscription.value.endpoint,
+		auth: encodePushSubscriptionKey(pushSubscription.value.getKey('auth')),
+		publickey: encodePushSubscriptionKey(pushSubscription.value.getKey('p256dh')),
+	};
 	const accounts = await getAccounts();
 
 	pushRegistrationInServer.value = undefined;
@@ -114,19 +119,13 @@ async function unsubscribe() {
 	if ($i && accounts.length >= 2) {
 		apiWithDialog('sw/unregister', {
 			i: $i.token,
-			endpoint,
+			...params,
 		});
 	} else {
 		pushSubscription.value.unsubscribe();
-		apiWithDialog('sw/unregister', {
-			endpoint,
-		});
+		apiWithDialog('sw/unregister', params);
 		pushSubscription.value = null;
 	}
-}
-
-function encode(buffer: ArrayBuffer | null) {
-	return btoa(String.fromCharCode.apply(null, buffer ? new Uint8Array(buffer) as any : []));
 }
 
 /**
