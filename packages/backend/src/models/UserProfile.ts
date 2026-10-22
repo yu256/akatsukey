@@ -181,10 +181,6 @@ export class MiUserProfile {
 	})
 	public alwaysMarkNsfw: boolean;
 
-	@Column('boolean', {
-		default: false,
-	})
-	public autoSensitive: boolean;
 
 	@Column('boolean', {
 		default: false,
