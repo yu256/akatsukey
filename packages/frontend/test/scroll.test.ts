@@ -39,7 +39,7 @@ describe('Scroll', () => {
 			const { document } = new Window();
 			const div = document.createElement('div');
 			assert.strictEqual(div.scrollTop, 0);
-			(div as any).scrollHeight = 100; // happy-dom has no scrollHeight
+			Object.defineProperty(div, 'scrollHeight', { value: 100 });
 
 			document.body.append(div);
 
@@ -53,7 +53,7 @@ describe('Scroll', () => {
 			const { document } = new Window();
 			const div = document.createElement('div');
 			assert.strictEqual(div.scrollTop, 0);
-			(div as any).scrollHeight = 100; // happy-dom has no scrollHeight
+			Object.defineProperty(div, 'scrollHeight', { value: 100 });
 
 			let called = false;
 			onScrollBottom(div as any as HTMLElement, () => called = true);

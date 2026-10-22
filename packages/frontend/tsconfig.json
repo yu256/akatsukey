@@ -32,8 +32,7 @@
 			"./node_modules"
 		],
 		"types": [
-			"vite/client",
-			"vitest/importMeta",
+			"vite/client"
 		],
 		"lib": [
 			"esnext",
@@ -48,6 +47,10 @@
 		"./**/*.vue"
 	],
 	"exclude": [
-		".storybook/**/*"
+		".storybook/**/*",
+		"test/**/*",
+		"**/*.test.ts",
+		"**/*.stories.ts",
+		"vitest.config.ts"
 	]
 }

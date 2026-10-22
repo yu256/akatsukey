@@ -4,14 +4,16 @@
  */
 
 import { vi } from 'vitest';
+import { createRequire } from 'node:module';
 import createFetchMock from 'vitest-fetch-mock';
 
 const fetchMocker = createFetchMock(vi);
 fetchMocker.enableMocks();
 
 // Set i18n
-import locales from '../../../locales/index.js';
 import { updateI18n } from '@/i18n.js';
+// The locale loader reads files in Node; keep Vite's browser asset rewriting out of it.
+const locales = createRequire(import.meta.url)('../../../locales/index.js').default;
 updateI18n(locales['en-US']);
 
 // XXX: misskey-js panics if WebSocket is not defined
@@ -39,19 +41,25 @@ vi.mock('@/store.js', () => {
 });
 
 // Add mocks for Web Audio API
-const AudioNodeMock = vi.fn(() => ({
-	connect: vi.fn(() => ({ connect: vi.fn() })),
-	start: vi.fn(),
-}));
+const AudioNodeMock = vi.fn(function () {
+	return {
+		connect: vi.fn(() => ({ connect: vi.fn() })),
+		start: vi.fn(),
+	};
+});
 
-const GainNodeMock = vi.fn(() => ({
-	gain: vi.fn(),
-}));
+const GainNodeMock = vi.fn(function () {
+	return {
+		gain: vi.fn(),
+	};
+});
 
-const AudioContextMock = vi.fn(() => ({
-	createBufferSource: vi.fn(() => new AudioNodeMock()),
-	createGain: vi.fn(() => new GainNodeMock()),
-	decodeAudioData: vi.fn(),
-}));
+const AudioContextMock = vi.fn(function () {
+	return {
+		createBufferSource: vi.fn(() => new AudioNodeMock()),
+		createGain: vi.fn(() => new GainNodeMock()),
+		decodeAudioData: vi.fn(),
+	};
+});
 
 vi.stubGlobal('AudioContext', AudioContextMock);

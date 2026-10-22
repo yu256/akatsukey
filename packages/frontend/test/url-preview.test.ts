@@ -12,9 +12,10 @@ import { directives } from '@/directives/index.js';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 
 type SummalyResult = Awaited<ReturnType<typeof summaly>>;
+type PreviewSummary = Partial<SummalyResult> & Pick<SummalyResult, 'url'>;
 
 describe('MkUrlPreview', () => {
-	const renderPreviewBy = async (summary: Partial<SummalyResult>): Promise<RenderResult> => {
+	const renderPreviewBy = async (summary: PreviewSummary): Promise<RenderResult> => {
 		if (!summary.player) {
 			summary.player = {
 				url: null,
@@ -24,7 +25,7 @@ describe('MkUrlPreview', () => {
 			};
 		}
 
-		fetchMock.mockOnceIf(/^\/url?/, () => {
+		fetchMock.mockOnceIf(req => new URL(req.url).pathname === '/url', () => {
 			return {
 				status: 200,
 				body: JSON.stringify(summary),
@@ -47,7 +48,7 @@ describe('MkUrlPreview', () => {
 		return result;
 	};
 
-	const renderAndOpenPreview = async (summary: Partial<SummalyResult>): Promise<HTMLIFrameElement | null> => {
+	const renderAndOpenPreview = async (summary: PreviewSummary): Promise<HTMLIFrameElement | null> => {
 		const mkUrlPreview = await renderPreviewBy(summary);
 		const buttons = mkUrlPreview.getAllByRole('button');
 		buttons[0].click();

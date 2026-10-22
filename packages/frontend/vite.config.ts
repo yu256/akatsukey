@@ -138,18 +138,6 @@ export function getConfig(): UserConfig {
 			format: 'es',
 		},
 
-		test: {
-			environment: 'happy-dom',
-			deps: {
-				optimizer: {
-					web: {
-						include: [
-						],
-					},
-				},
-			},
-			includeSource: ['src/**/*.ts'],
-		},
 	};
 }
 

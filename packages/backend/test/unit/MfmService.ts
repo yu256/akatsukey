@@ -5,21 +5,11 @@
 
 import * as assert from 'assert';
 import * as mfm from 'mfm-js';
-import { Test } from '@nestjs/testing';
-
-import { CoreModule } from '@/core/CoreModule.js';
 import { MfmService } from '@/core/MfmService.js';
-import { GlobalModule } from '@/GlobalModule.js';
+import type { Config } from '@/config.js';
 
 describe('MfmService', () => {
-	let mfmService: MfmService;
-
-	beforeAll(async () => {
-		const app = await Test.createTestingModule({
-			imports: [GlobalModule, CoreModule],
-		}).compile();
-		mfmService = app.get<MfmService>(MfmService);
-	});
+	const mfmService = new MfmService({ url: 'http://misskey.local' } as Config);
 
 	describe('toHtml', () => {
 		test('br', () => {

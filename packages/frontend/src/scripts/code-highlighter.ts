@@ -1,5 +1,6 @@
 import { bundledThemesInfo } from 'shiki';
-import { getHighlighterCore, loadWasm } from 'shiki/core';
+import { createHighlighterCore } from 'shiki/core';
+import { createOnigurumaEngine } from 'shiki/engine/oniguruma';
 import darkPlus from 'shiki/themes/dark-plus.mjs';
 import { unique } from './array.js';
 import { deepClone } from './clone.js';
@@ -56,15 +57,14 @@ export async function getHighlighter(): Promise<HighlighterCore> {
 export async function initHighlighter() {
 	const aiScriptGrammar = await import('aiscript-vscode/aiscript/syntaxes/aiscript.tmLanguage.json');
 
-	await loadWasm(import('shiki/onig.wasm?init'));
-
 	// テーマの重複を消す
 	const themes = unique([
 		darkPlus,
 		...(await Promise.all([getTheme('light'), getTheme('dark')])),
 	]);
 
-	const highlighter = await getHighlighterCore({
+	const highlighter = await createHighlighterCore({
+		engine: createOnigurumaEngine(import('shiki/wasm')),
 		themes,
 		langs: [
 			import('shiki/langs/javascript.mjs'),
