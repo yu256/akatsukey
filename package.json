@@ -42,25 +42,23 @@
 		"clean-all": "node ./scripts/clean-all.js",
 		"cleanall": "pnpm clean-all"
 	},
-	"dependencies": {
-		"cssnano": "6.1.2",
-		"execa": "10.1.1",
-		"fast-glob": "3.3.3",
-		"ignore-walk": "6.0.5",
-		"js-yaml": "4.3.2",
-		"postcss": "8.5.30",
-		"tar": "7.5.22",
-		"terser": "5.51.2",
-		"typescript": "5.9.3"
-	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "6.21.0",
 		"@typescript-eslint/parser": "6.21.0",
 		"cross-env": "7.0.3",
+		"cssnano": "6.1.2",
 		"cypress": "13.17.0",
 		"eslint": "8.56.0",
+		"execa": "10.1.1",
+		"fast-glob": "3.3.3",
+		"ignore-walk": "6.0.5",
+		"js-yaml": "4.3.2",
 		"ncp": "2.0.0",
-		"start-server-and-test": "2.1.5"
+		"postcss": "8.5.30",
+		"start-server-and-test": "2.1.5",
+		"tar": "7.5.22",
+		"terser": "5.51.2",
+		"typescript": "5.9.3"
 	},
 	"volta": {
 		"node": "24.22.1"

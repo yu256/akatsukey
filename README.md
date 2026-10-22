@@ -52,6 +52,20 @@ With Misskey's built in drive, you get cloud storage right in your social media,
 
 Misskey Documentation can be found at [Misskey Hub](https://misskey-hub.net/docs/), some of the links and graphics above also lead to specific portions of it.
 
+## Building and updating
+
+Build tools are development dependencies. Install them even when building for production.
+When updating, stop the application before cleaning its previous build, then run:
+
+```sh
+node scripts/clean.js
+pnpm install --frozen-lockfile --prod=false
+pnpm build
+pnpm migrate
+```
+
+Restart the application after the build and migrations finish.
+
 ## Sponsors
 
 <div align="center">

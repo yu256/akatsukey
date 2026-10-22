@@ -29,10 +29,6 @@ async function loadConfig() {
 	return fs.readFile(configPath, 'utf-8').then(data => yaml.load(data)).catch(() => null);
 }
 
-async function copyFrontendFonts() {
-  await fs.cp('./packages/frontend/node_modules/three/examples/fonts', './built/_frontend_dist_/fonts', { dereference: true, recursive: true });
-}
-
 async function copyFrontendTablerIcons() {
   await fs.cp('./packages/frontend/node_modules/@tabler/icons-webfont', './built/_frontend_dist_/tabler-icons', { dereference: true, recursive: true });
 }
@@ -85,7 +81,6 @@ async function buildBackendStyle() {
 
 async function build() {
   await Promise.all([
-    copyFrontendFonts(),
     copyFrontendTablerIcons(),
     copyFrontendLocales(),
     copyBackendViews(),
