@@ -18,6 +18,8 @@ import type { ChannelsService } from './ChannelsService.js';
 import type { EventEmitter } from 'events';
 import type Channel from './channel.js';
 
+const MAX_SUBSCRIBING_NOTES_PER_CONNECTION = 1536;
+
 /**
  * Main stream connection
  */
@@ -28,7 +30,7 @@ export default class Connection {
 	private wsConnection: WebSocket.WebSocket;
 	public subscriber: StreamEventEmitter;
 	private channels: Channel[] = [];
-	private subscribingNotes: any = {};
+	private subscribingNotes: Map<string, number> = new Map();
 	private cachedNotes: Packed<'Note'>[] = [];
 	public userProfile: MiUserProfile | null = null;
 	public following: Record<string, Pick<MiFollowing, 'withReplies'> | undefined> = {};
@@ -172,15 +174,24 @@ export default class Connection {
 	 */
 	@bindThis
 	private onSubscribeNote(payload: any) {
-		if (!payload.id) return;
+		if (!payload.id || typeof payload.id !== 'string') return;
 
-		if (this.subscribingNotes[payload.id] == null) {
-			this.subscribingNotes[payload.id] = 0;
+		const current = this.subscribingNotes.get(payload.id) ?? 0;
+
+		if (current === 0 && this.subscribingNotes.size >= MAX_SUBSCRIBING_NOTES_PER_CONNECTION) {
+			const oldestId = this.subscribingNotes.keys().next().value;
+			if (oldestId != null) {
+				this.subscriber.off(`noteStream:${oldestId}`, this.onNoteStreamMessage);
+				this.subscribingNotes.delete(oldestId);
+			}
+		} else {
+			this.subscribingNotes.delete(payload.id);
 		}
 
-		this.subscribingNotes[payload.id]++;
+		const updated = current + 1;
+		this.subscribingNotes.set(payload.id, updated);
 
-		if (this.subscribingNotes[payload.id] === 1) {
+		if (updated === 1) {
 			this.subscriber.on(`noteStream:${payload.id}`, this.onNoteStreamMessage);
 		}
 	}
@@ -190,12 +201,17 @@ export default class Connection {
 	 */
 	@bindThis
 	private onUnsubscribeNote(payload: any) {
-		if (!payload.id) return;
+		if (!payload.id || typeof payload.id !== 'string') return;
 
-		this.subscribingNotes[payload.id]--;
-		if (this.subscribingNotes[payload.id] <= 0) {
-			delete this.subscribingNotes[payload.id];
+		const current = this.subscribingNotes.get(payload.id);
+		if (current == null) return;
+
+		const updated = current - 1;
+		if (updated <= 0) {
+			this.subscribingNotes.delete(payload.id);
 			this.subscriber.off(`noteStream:${payload.id}`, this.onNoteStreamMessage);
+		} else {
+			this.subscribingNotes.set(payload.id, updated);
 		}
 	}
 
@@ -321,5 +337,9 @@ export default class Connection {
 		for (const c of this.channels.filter(c => c.dispose)) {
 			if (c.dispose) c.dispose();
 		}
+		for (const id of this.subscribingNotes.keys()) {
+			this.subscriber.off(`noteStream:${id}`, this.onNoteStreamMessage);
+		}
+		this.subscribingNotes.clear();
 	}
 }
