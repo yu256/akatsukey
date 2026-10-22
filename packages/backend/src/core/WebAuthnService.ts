@@ -97,13 +97,11 @@ export class WebAuthnService {
 		credentialBackedUp: boolean;
 		transports?: AuthenticatorTransportFuture[];
 	}> {
-		const challenge = await this.redisClient.get(`webauthn:registrationChallenge:${userId}`);
+		const challenge = await this.redisClient.getdel(`webauthn:registrationChallenge:${userId}`);
 
 		if (!challenge) {
 			throw new IdentifiableError('7dbfb66c-9216-4e2b-9c27-cef2ac8efb84', 'challenge not found');
 		}
-
-		await this.redisClient.del(`webauthn:registrationChallenge:${userId}`);
 
 		const relyingParty = await this.getRelyingParty();
 
@@ -168,13 +166,11 @@ export class WebAuthnService {
 
 	@bindThis
 	public async verifyAuthentication(userId: MiUser['id'], response: AuthenticationResponseJSON): Promise<boolean> {
-		const challenge = await this.redisClient.get(`webauthn:authenticationChallenge:${userId}`);
+		const challenge = await this.redisClient.getdel(`webauthn:authenticationChallenge:${userId}`);
 
 		if (!challenge) {
 			throw new IdentifiableError('2d16e51c-007b-4edd-afd2-f7dd02c947f6', 'challenge not found');
 		}
-
-		await this.redisClient.del(`webauthn:authenticationChallenge:${userId}`);
 
 		const key = await this.userSecurityKeysRepository.findOneBy({
 			id: response.id,
