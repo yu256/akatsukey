@@ -10,7 +10,7 @@ import {
 	generateRegistrationOptions, verifyAuthenticationResponse,
 	verifyRegistrationResponse,
 } from '@simplewebauthn/server';
-import { AttestationFormat, isoCBOR } from '@simplewebauthn/server/helpers';
+import { isoCBOR, isoUint8Array } from '@simplewebauthn/server/helpers';
 import { DI } from '@/di-symbols.js';
 import type { UserSecurityKeysRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -20,13 +20,12 @@ import { MiUser } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type {
 	AuthenticationResponseJSON,
-	AuthenticatorTransportFuture,
+	AttestationFormat,
 	CredentialDeviceType,
 	PublicKeyCredentialCreationOptionsJSON,
-	PublicKeyCredentialDescriptorFuture,
 	PublicKeyCredentialRequestOptionsJSON,
 	RegistrationResponseJSON,
-} from '@simplewebauthn/types';
+} from '@simplewebauthn/server';
 
 @Injectable()
 export class WebAuthnService {
@@ -49,7 +48,7 @@ export class WebAuthnService {
 		const instance = await this.metaService.fetch();
 		return {
 			origin: this.config.url,
-			rpId: this.config.host,
+			rpId: this.config.hostname,
 			rpName: instance.name ?? this.config.host,
 			rpIcon: instance.iconUrl ?? undefined,
 		};
@@ -65,13 +64,11 @@ export class WebAuthnService {
 		const registrationOptions = await generateRegistrationOptions({
 			rpName: relyingParty.rpName,
 			rpID: relyingParty.rpId,
-			userID: userId,
+			userID: isoUint8Array.fromUTF8String(userId),
 			userName: userName,
 			userDisplayName: userDisplayName,
-			attestationType: 'indirect',
-			excludeCredentials: keys.map(key => (<PublicKeyCredentialDescriptorFuture>{
-				id: Buffer.from(key.id, 'base64url'),
-				type: 'public-key',
+			excludeCredentials: keys.map(key => ({
+				id: key.id,
 				transports: key.transports ?? undefined,
 			})),
 			authenticatorSelection: {
@@ -87,7 +84,7 @@ export class WebAuthnService {
 
 	@bindThis
 	public async verifyRegistration(userId: MiUser['id'], response: RegistrationResponseJSON): Promise<{
-		credentialID: Uint8Array;
+		credentialID: string;
 		credentialPublicKey: Uint8Array;
 		attestationObject: Uint8Array;
 		fmt: AttestationFormat;
@@ -95,7 +92,7 @@ export class WebAuthnService {
 		userVerified: boolean;
 		credentialDeviceType: CredentialDeviceType;
 		credentialBackedUp: boolean;
-		transports?: AuthenticatorTransportFuture[];
+		transports?: string[];
 	}> {
 		const challenge = await this.redisClient.getdel(`webauthn:registrationChallenge:${userId}`);
 
@@ -128,11 +125,11 @@ export class WebAuthnService {
 		const { registrationInfo } = verification;
 
 		return {
-			credentialID: registrationInfo.credentialID,
-			credentialPublicKey: registrationInfo.credentialPublicKey,
+			credentialID: registrationInfo.credential.id,
+			credentialPublicKey: registrationInfo.credential.publicKey,
 			attestationObject: registrationInfo.attestationObject,
 			fmt: registrationInfo.fmt,
-			counter: registrationInfo.counter,
+			counter: registrationInfo.credential.counter,
 			userVerified: registrationInfo.userVerified,
 			credentialDeviceType: registrationInfo.credentialDeviceType,
 			credentialBackedUp: registrationInfo.credentialBackedUp,
@@ -150,10 +147,11 @@ export class WebAuthnService {
 			throw new IdentifiableError('f27fd449-9af4-4841-9249-1f989b9fa4a4', 'no keys found');
 		}
 
+		const relyingParty = await this.getRelyingParty();
 		const authenticationOptions = await generateAuthenticationOptions({
-			allowCredentials: keys.map(key => (<PublicKeyCredentialDescriptorFuture>{
-				id: Buffer.from(key.id, 'base64url'),
-				type: 'public-key',
+			rpID: relyingParty.rpId,
+			allowCredentials: keys.map(key => ({
+				id: key.id,
 				transports: key.transports ?? undefined,
 			})),
 			userVerification: 'preferred',
@@ -214,11 +212,11 @@ export class WebAuthnService {
 				expectedChallenge: challenge,
 				expectedOrigin: relyingParty.origin,
 				expectedRPID: relyingParty.rpId,
-				authenticator: {
-					credentialID: Buffer.from(key.id, 'base64url'),
-					credentialPublicKey: Buffer.from(key.publicKey, 'base64url'),
+				credential: {
+					id: key.id,
+					publicKey: new Uint8Array(Buffer.from(key.publicKey, 'base64url')),
 					counter: key.counter,
-					transports: key.transports ? key.transports as AuthenticatorTransportFuture[] : undefined,
+					transports: key.transports ?? undefined,
 				},
 				requireUserVerification: true,
 			});
