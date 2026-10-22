@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
-import { IsNull } from 'typeorm';
+import { IsNull, LessThanOrEqual } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -20,6 +20,7 @@ import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { SigninService } from './SigninService.js';
+import type { FindOptionsWhere } from 'typeorm';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
@@ -183,30 +184,44 @@ export class SignupApiService {
 			const salt = await bcrypt.genSalt(8);
 			const hash = await bcrypt.hash(password, salt);
 
-			const pendingUser = await this.userPendingsRepository.insert({
-				id: this.idService.gen(),
-				code,
-				email: emailAddress!,
-				username: username,
-				password: hash,
-			}).then(x => this.userPendingsRepository.findOneByOrFail(x.identifiers[0]));
+			if (ticket && !await this.claimRegistrationTicket(ticket)) {
+				reply.code(400);
+				return;
+			}
 
-			const link = `${this.config.url}/signup-complete/${code}`;
+			try {
+				const pendingUser = await this.userPendingsRepository.insert({
+					id: this.idService.gen(),
+					code,
+					email: emailAddress!,
+					username: username,
+					password: hash,
+				}).then(x => this.userPendingsRepository.findOneByOrFail(x.identifiers[0]));
 
-			this.emailService.sendEmail(emailAddress!, 'Signup',
-				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-				`To complete signup, please click this link: ${link}`);
+				const link = `${this.config.url}/signup-complete/${code}`;
 
-			if (ticket) {
-				await this.registrationTicketsRepository.update(ticket.id, {
-					usedAt: new Date(),
-					pendingUserId: pendingUser.id,
-				});
+				this.emailService.sendEmail(emailAddress!, 'Signup',
+					`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
+					`To complete signup, please click this link: ${link}`);
+
+				if (ticket) {
+					await this.registrationTicketsRepository.update(ticket.id, {
+						pendingUserId: pendingUser.id,
+					});
+				}
+			} catch (err) {
+				if (ticket) await this.releaseRegistrationTicket(ticket);
+				throw err;
 			}
 
 			reply.code(204);
 			return;
 		} else {
+			if (ticket && !await this.claimRegistrationTicket(ticket)) {
+				reply.code(400);
+				return;
+			}
+
 			try {
 				const { account, secret } = await this.signupService.signup({
 					username, password, host,
@@ -219,7 +234,6 @@ export class SignupApiService {
 
 				if (ticket) {
 					await this.registrationTicketsRepository.update(ticket.id, {
-						usedAt: new Date(),
 						usedBy: account,
 						usedById: account.id,
 					});
@@ -230,9 +244,42 @@ export class SignupApiService {
 					token: secret,
 				};
 			} catch (err) {
+				if (ticket) await this.releaseRegistrationTicket(ticket);
 				throw new FastifyReplyError(400, typeof err === 'string' ? err : (err as Error).toString());
 			}
 		}
+	}
+
+	@bindThis
+	private async claimRegistrationTicket(ticket: MiRegistrationTicket): Promise<boolean> {
+		const where: FindOptionsWhere<MiRegistrationTicket>[] = [
+			{ id: ticket.id, usedById: IsNull(), usedAt: IsNull() },
+		];
+
+		if ((await this.metaService.fetch()).emailRequiredForSignup) {
+			where.push({
+				id: ticket.id,
+				usedById: IsNull(),
+				usedAt: LessThanOrEqual(new Date(Date.now() - (1000 * 60 * 30))),
+			});
+		}
+
+		const result = await this.registrationTicketsRepository.update(where, {
+			usedAt: new Date(),
+		});
+
+		return (result.affected ?? 0) > 0;
+	}
+
+	@bindThis
+	private async releaseRegistrationTicket(ticket: MiRegistrationTicket): Promise<void> {
+		await this.registrationTicketsRepository.update({
+			id: ticket.id,
+			usedById: IsNull(),
+		}, {
+			usedAt: null,
+			pendingUserId: null,
+		});
 	}
 
 	@bindThis
