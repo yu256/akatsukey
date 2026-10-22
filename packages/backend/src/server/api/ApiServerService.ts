@@ -51,6 +51,8 @@ export class ApiServerService {
 			limits: {
 				fileSize: this.config.maxFileSize ?? 262144000,
 				files: 1,
+				fields: 64,
+				parts: 65,
 			},
 		});
 
