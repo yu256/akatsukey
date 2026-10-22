@@ -265,13 +265,15 @@ export class ClientServerService {
 				fastify.addHook('onRequest', handleRequestRedirectToOmitSearch);
 				done();
 			});
-		} else {
+		} else if (process.env.NODE_ENV === 'development') {
 			const port = (process.env.VITE_PORT ?? '5173');
 			fastify.register(fastifyProxy, {
 				upstream: 'http://localhost:' + port,
 				prefix: '/vite',
 				rewritePrefix: '/vite',
 			});
+		} else {
+			throw new Error('Vite client manifest is missing outside development mode');
 		}
 		//#endregion
 
