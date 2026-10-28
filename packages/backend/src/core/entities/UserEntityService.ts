@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
+import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/json-schema.js';
@@ -510,7 +511,7 @@ export class UserEntityService implements OnModuleInit {
 		return await awaitAll(packed);
 	}
 
-	public packMany<S extends 'MeDetailed' | 'UserDetailedNotMe' | 'UserDetailed' | 'UserLite' = 'UserLite'>(
+	public async packMany<S extends 'MeDetailed' | 'UserDetailedNotMe' | 'UserDetailed' | 'UserLite' = 'UserLite'>(
 		users: (MiUser['id'] | MiUser)[],
 		me?: { id: MiUser['id'] } | null | undefined,
 		options?: {
@@ -518,6 +519,17 @@ export class UserEntityService implements OnModuleInit {
 			includeSecrets?: boolean,
 		},
 	): Promise<Packed<S>[]> {
-		return Promise.all(users.map(u => this.pack(u, me, options)));
+		const userIds = Array.from(new Set(users.filter((user): user is MiUser['id'] => typeof user === 'string')));
+		const usersById = userIds.length > 0
+			? await this.usersRepository.findBy({ id: In(userIds) }).then(found => new Map(found.map(user => [user.id, user])))
+			: new Map<MiUser['id'], MiUser>();
+
+		return Promise.all(users.map(user => {
+			if (typeof user !== 'string') return this.pack(user, me, options);
+
+			// Preserve packMany's previous missing-user failure semantics by
+			// delegating unresolved IDs to pack(), which uses findOneByOrFail().
+			return this.pack(usersById.get(user) ?? user, me, options);
+		}));
 	}
 }

@@ -285,6 +285,7 @@ export class NoteEntityService implements OnModuleInit {
 			_hint_?: {
 				myReactions: Map<MiNote['id'], string | null>;
 				packedFiles: Map<MiNote['fileIds'][number], Packed<'DriveFile'> | null>;
+				packedUsers: Map<MiUser['id'], Packed<'UserLite'>>;
 			};
 		},
 	): Promise<Packed<'Note'>> {
@@ -314,12 +315,13 @@ export class NoteEntityService implements OnModuleInit {
 			.filter(x => x.startsWith(':') && x.includes('@') && !x.includes('@.')) // リモートカスタム絵文字のみ
 			.map(x => this.reactionService.decodeReaction(x).reaction.replaceAll(':', ''));
 		const packedFiles = options?._hint_?.packedFiles;
+		const packedUsers = options?._hint_?.packedUsers;
 
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
 			createdAt: this.idService.parse(note.id).date.toISOString(),
 			userId: note.userId,
-			user: this.userEntityService.pack(note.user ?? note.userId, me),
+			user: packedUsers?.get(note.userId) ?? this.userEntityService.pack(note.user ?? note.userId, me),
 			text: text,
 			cw: note.cw,
 			visibility: note.visibility,
@@ -443,11 +445,31 @@ export class NoteEntityService implements OnModuleInit {
 		const fileIds = notes.map(n => [n.fileIds, n.renote?.fileIds, n.reply?.fileIds]).flat(2).filter(isNotNull);
 		const packedFiles = fileIds.length > 0 ? await this.driveFileEntityService.packManyByIdsMap(fileIds) : new Map();
 
+		const users = new Map<MiUser['id'], MiUser['id'] | MiUser>();
+		const addUser = (user: MiUser['id'] | MiUser) => {
+			const userId = typeof user === 'string' ? user : user.id;
+			const existing = users.get(userId);
+
+			// Prefer an already-hydrated entity over an ID so packMany does not
+			// query the user table again for timeline joins we already loaded.
+			if (existing == null || typeof existing === 'string') users.set(userId, user);
+		};
+
+		for (const note of notes) {
+			addUser(note.user ?? note.userId);
+			if (note.replyUserId) addUser(note.reply?.user ?? note.replyUserId);
+			if (note.renoteUserId) addUser(note.renote?.user ?? note.renoteUserId);
+		}
+
+		const packedUsers = await this.userEntityService.packMany(Array.from(users.values()), me)
+			.then(users => new Map(users.map(user => [user.id, user])));
+
 		return await Promise.all(notes.map(n => this.pack(n, me, {
 			...options,
 			_hint_: {
 				myReactions: myReactionsMap,
 				packedFiles,
+				packedUsers,
 			},
 		})));
 	}
