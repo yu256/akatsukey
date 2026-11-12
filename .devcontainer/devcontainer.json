@@ -5,10 +5,10 @@
 	"workspaceFolder": "/workspace",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/pnpm:2": {
-			"version": "8.9.2"
+			"version": "12.13.0"
 		},
 		"ghcr.io/devcontainers/features/node:1": {
-			"version": "24.22.1"
+			"version": "26.13.1"
 		}
 	},
 	"forwardPorts": [3000],

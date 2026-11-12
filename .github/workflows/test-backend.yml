@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [24.22.1]
+        node-version: [26.13.1]
 
     services:
       postgres:
@@ -41,16 +41,14 @@ jobs:
       with:
         submodules: true
     - name: Install pnpm
-      uses: pnpm/action-setup@v3
+      uses: pnpm/action-setup@v4
       with:
-        version: 8
         run_install: false
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4.0.2
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
-    - run: corepack enable
     - run: pnpm i --frozen-lockfile
     - name: Check pnpm-lock.yaml
       run: git diff --exit-code pnpm-lock.yaml
@@ -71,7 +69,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [24.22.1]
+        node-version: [26.13.1]
 
     services:
       postgres:
@@ -91,16 +89,14 @@ jobs:
         with:
           submodules: true
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
           run_install: false
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4.0.2
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - run: corepack enable
       - run: pnpm i --frozen-lockfile
       - name: Check pnpm-lock.yaml
         run: git diff --exit-code pnpm-lock.yaml
